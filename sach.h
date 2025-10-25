@@ -27,4 +27,10 @@ void tim_kiem_theo_ten_sach(char *ten_can_tim);
 // Hàm quản lý sách
 void quan_ly_sach();
 
+// Hàm đọc dữ liệu sách từ file
+void doc_du_lieu_sach_tu_file(const char *filename);
+
+// Hàm đọc dữ liệu độc giả từ file
+void doc_du_lieu_doc_gia_tu_file(const char *filename);
+
 #endif // BOOK_H

@@ -1,0 +1,5 @@
+MS_001;Lập Trình C Cơ Bản;Nguyen Van A;NXB Trẻ;2020;Giáo trình;95000;10
+MS_002;Cấu Trúc Dữ Liệu Và Giải Thuật;Tran Thi B;NXB Khoa Học;2021;Giáo trình;120000;7
+MS_003;Thuật Toán Cấp Tốc;Le Van C;NXB Đại Học;2019;Tham khảo;150000;5
+MS_004;Trí Tuệ Nhân Tạo Nhập Môn;Pham Minh D;NXB Thế Giới;2022;Công nghệ;180000;3
+MS_005;Python Cho Người Mới;Doan Kim E;NXB Lao Động;2023;Lập trình;99000;8

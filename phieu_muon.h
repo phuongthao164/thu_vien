@@ -1,7 +1,7 @@
-// Quản lý phiếu mượn/trả sách
+// Quản lý phiếu mượn sách
 
-#ifndef PHIEU_MUON_TRA_H
-#define PHIEU_MUON_TRA_H
+#ifndef PHIEU_MUON_H
+#define PHIEU_MUON_H
 
 void ngay_muon(int index);
 
@@ -13,10 +13,10 @@ long kiem_tra_tra_sach(const char *ngay_tra_thuc_te, const char *ngay_tra_du_kie
 
 void lap_phieu_muon();
 
-void lap_phieu_tra();
-
 void danh_sach_phieu_muon();
+
+void doc_du_lieu_phieu_muon_tu_file(const char *filename);
 
 void quan_ly_phieu_muon();
 
-#endif // PHIEU_MUON_TRA_H
+#endif // PHIEU_MUON_H

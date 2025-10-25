@@ -60,28 +60,28 @@ void them_doc_gia() {
 
     // Mã độc giả sẽ được tự động đếm số tăng dần
     int ma_doc_gia = tong_so_doc_gia + 1;
-    printf("Mã độc giả của bạn là: %d \n",ma_doc_gia);
+    printf("  Mã độc giả của bạn là: %d \n",ma_doc_gia);
 
     // Lưu ID độc giả vào mảng id_doc_gia
     id_doc_gia[tong_so_doc_gia] = ma_doc_gia;
 
     // Thêm thông tin độc giả vào danh sách
-    printf("Vui lòng nhập thông tin của bạn: \n");
+    printf("--Vui lòng nhập thông tin của bạn: \n");
 
     // Họ tên
-    printf("Nhập họ tên: ");
+    printf("  Nhập họ tên: ");
     scanf(" %[^\n]%*c", ho_ten[tong_so_doc_gia]);  
 
     // CMND
-    printf("Nhập CMND: ");
+    printf("  Nhập CMND: ");
     scanf("%99s", cmnd[tong_so_doc_gia]);  
 
     // Ngày tháng năm sinh
-    printf("Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
+    printf("  Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
     scanf("%99s", ngay_sinh[tong_so_doc_gia]);  
 
     // Giới tính
-    printf("Nhập giới tính (Nam/Nữ): ");
+    printf("  Nhập giới tính (Nam/Nữ): ");
     scanf("%99s", gioi_tinh[tong_so_doc_gia]);
 
     // // Giới tính -------------------------------NEW -------------------------------------
@@ -97,11 +97,11 @@ void them_doc_gia() {
     // }
 
     // Email
-    printf("Nhập email: ");
+    printf("  Nhập email: ");
     scanf("%99s", email[tong_so_doc_gia]); 
     
     // Địa chỉ
-    printf("Nhập địa chỉ: ");
+    printf("  Nhập địa chỉ: ");
     scanf(" %[^\n]%*c", dia_chi[tong_so_doc_gia]);  
 
     // Ngày lập thẻ và ngày hết hạn
@@ -109,7 +109,7 @@ void them_doc_gia() {
     ngay_het_han(tong_so_doc_gia);
 
     tong_so_doc_gia++;
-    printf("Độc giả đã được thêm thành công\n");
+    printf("-> Độc giả đã được thêm thành công\n");
 }
 
 // Hàm hiển thị danh sách độc giả
@@ -119,10 +119,10 @@ void danh_sach_doc_gia() {
         return;
     }
 
-    printf("Số độc giả hiện tại của thư viện là: %d\n",tong_so_doc_gia);
-    printf("Danh sách độc giả:\n");
+    printf("  Số độc giả hiện tại của thư viện là: %d\n",tong_so_doc_gia);
+    printf("--Danh sách độc giả:\n");
     for (int i = 0; i < tong_so_doc_gia; i++) {
-    printf("Độc giả thứ %d (ID: %d)\n", i+1, id_doc_gia[i]);
+    printf("* Độc giả thứ %d (ID: %d)\n", i+1, id_doc_gia[i]);
     if (ho_ten[i][0] == '\0') {
         printf("  >> Thông tin độc giả đã bị xóa \n");
     } else {
@@ -148,27 +148,27 @@ void chinh_sua_doc_gia(int id) {
             if (ho_ten[i][0] == '\0') {
                 // printf("Thong tin cua doc gia %d da bi xoa.",id);
                 // break;
-                printf("Thông tin của độc giả %d đã bị xóa. Bạn có muốn cập nhật thông tin mới cho độc giả này không?\n", id);
+                printf("-> Thông tin của độc giả %d đã bị xóa. Bạn có muốn cập nhật thông tin mới cho độc giả này không?\n", id);
                 printf("Nhập 1. Tiếp tục hoặc Nhập kí tự bất kì để Thoát. \n");
                 int chon;
                 scanf("%d", &chon);
                 if (chon == 1) {    
-                    printf("Nhập thông tin mới:\n");
-                    printf("Nhập họ tên: ");
+                    printf("-- Nhập thông tin mới:\n");
+                    printf("  Nhập họ tên: ");
                     scanf(" %[^\n]%*c", ho_ten[i]);
-                    printf("Nhập CMND: ");
+                    printf("  Nhập CMND: ");
                     scanf("%99s", cmnd[i]);
-                    printf("Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
+                    printf("  Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
                     scanf("%99s", ngay_sinh[i]);
-                    printf("Nhập giới tính (Nam/Nữ): ");
+                    printf("  Nhập giới tính (Nam/Nữ): ");
                     scanf("%99s", gioi_tinh[i]);
-                    printf("Nhập email: ");
+                    printf("  Nhập email: ");
                     scanf("%99s", email[i]);
-                    printf("Nhập địa chỉ: ");
+                    printf("  Nhập địa chỉ: ");
                     scanf(" %[^\n]%*c", dia_chi[i]);
                     ngay_lap(i);
                     ngay_het_han(i);
-                    printf("Thông tin độc giả đã được cập nhật mới!\n");
+                    printf("-> Thông tin độc giả đã được cập nhật mới!\n");
                     break;
                 } else {
                     // Dọn bộ nhớ đệm
@@ -180,30 +180,30 @@ void chinh_sua_doc_gia(int id) {
                 }
             } else {
             // Cập nhật thông tin độc giả đang hoạt động
-            printf(" Bạn đang thực hiện chỉnh sửa thông tin của độc giả %d \n",id);
-            printf ("Thông tin hiện tại là: Họ tên: %s, CMND: %s, Ngày sinh: %s, Giới tính: %s, Email: %s, Địa chỉ: %s, Ngày lập thẻ: %s, Ngày hết hạn thẻ: %s\n",
+            printf("* Bạn đang thực hiện chỉnh sửa thông tin của độc giả %d \n",id);
+            printf ("  Thông tin hiện tại là: Họ tên: %s, CMND: %s, Ngày sinh: %s, Giới tính: %s, Email: %s, Địa chỉ: %s, Ngày lập thẻ: %s, Ngày hết hạn thẻ: %s\n",
                         ho_ten[i], cmnd[i], ngay_sinh[i], gioi_tinh[i], email[i], dia_chi[i], ngay_lap_the[i], ngay_het_han_the[i]);      
-            printf("Nhập thông tin bạn muốn chỉnh sửa:\n");
-            printf("Nhập họ tên chỉnh sửa: ");
+            printf("-- Nhập thông tin bạn muốn chỉnh sửa:\n");
+            printf("  Nhập họ tên chỉnh sửa: ");
             scanf(" %[^\n]%*c", ho_ten[i]);
-            printf("Nhập CMND chỉnh sửa: ");
+            printf("  Nhập CMND chỉnh sửa: ");
             scanf("%99s", cmnd[i]);
-            printf("Nhập ngày sinh chỉnh sửa (dd/mm/yyyy): ");
+            printf("  Nhập ngày sinh chỉnh sửa (dd/mm/yyyy): ");
             scanf("%99s", ngay_sinh[i]);
-            printf("Nhập giới tính chỉnh sửa (Nam/Nữ): ");
+            printf("  Nhập giới tính chỉnh sửa (Nam/Nữ): ");
             scanf("%99s", gioi_tinh[i]);
-            printf("Nhập email chỉnh sửa: ");
+            printf("  Nhập email chỉnh sửa: ");
             scanf("%99s", email[i]);
-            printf("Nhập địa chỉ chỉnh sửa: ");
-            scanf("  %[^\n]%*c", dia_chi[i]);
-            printf("Ngày lập thẻ và Ngày hết hạn không thể thay đổi!\n");
-            printf("Thông tin độc giả đã được cập nhật!\n");
+            printf("  Nhập địa chỉ chỉnh sửa: ");
+            scanf(" %[^\n]%*c", dia_chi[i]);
+            printf("  Ngày lập thẻ và Ngày hết hạn không thể thay đổi!\n");
+            printf("-> Thông tin độc giả đã được cập nhật!\n");
             break;
             }
         }
     }
     if (!found) {
-        printf("Không tìm thấy độc giả nào có mã %d.\n", id);
+        printf("-> Không tìm thấy độc giả nào có mã %d.\n", id);
     }
 }
 
@@ -222,12 +222,12 @@ void xoa_doc_gia(int id) {
             dia_chi[i][0] = '\0';
             ngay_lap_the[i][0] = '\0';
             ngay_het_han_the[i][0] = '\0';
-            printf("Đã xóa thông tin của độc giả có mã %d.\n", id);
+            printf("-> Đã xóa thông tin của độc giả có mã %d.\n", id);
             break;
         }
     }
     if (!found) {
-        printf("Không tìm thấy độc giả nào có mã %d.\n", id);
+        printf("-> Không tìm thấy độc giả nào có mã %d.\n", id);
     }
 }
 
@@ -253,7 +253,7 @@ void tim_kiem_theo_cmnd(char *cmnd_can_tim) {
         }
     }
     if (!found) {
-        printf("Không tìm thấy độc giả nào có CMND: %s.\n", cmnd_can_tim);
+        printf("-> Không tìm thấy độc giả nào có CMND: %s.\n", cmnd_can_tim);
     }
 }
 
@@ -278,7 +278,7 @@ void tim_kiem_theo_ten_doc_gia(char *ten_can_tim) {
         }
     }
     if (!found) {
-        printf("Không tìm thấy độc giả nào có tên: %s.\n", ten_can_tim);
+        printf("-> Không tìm thấy độc giả nào có tên: %s.\n", ten_can_tim);
     }
 }
 
@@ -288,7 +288,7 @@ void quan_ly_doc_gia() {
     int id;
     char cmnd[100];
     char ho_ten[100];
-    printf("1. Thêm độc giả\n");
+    printf("\n1. Thêm độc giả\n");
     printf("2. Xem danh sách độc giả\n");
     printf("3. Chỉnh sửa thông tin độc giả\n");
     printf("4. Xóa thông tin độc giả\n");
@@ -331,3 +331,34 @@ void quan_ly_doc_gia() {
             printf("Chọn không hợp lệ. Thử lại nhé!\n");
     }
 }
+
+
+// Hàm đọc dữ liệu độc giả từ file
+void doc_du_lieu_doc_gia_tu_file(const char *filename) {
+    FILE *f = fopen(filename, "r");
+    if (!f) {
+        printf("Không thể mở file %s\n", filename);
+        return;
+    }
+
+    while (!feof(f) && tong_so_doc_gia < MAX_USERS) {
+        fscanf(
+            f,
+            "%d;%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]\n",
+            &id_doc_gia[tong_so_doc_gia],
+            ho_ten[tong_so_doc_gia],
+            cmnd[tong_so_doc_gia],
+            ngay_sinh[tong_so_doc_gia],
+            gioi_tinh[tong_so_doc_gia],
+            email[tong_so_doc_gia],
+            dia_chi[tong_so_doc_gia],
+            ngay_lap_the[tong_so_doc_gia],
+            ngay_het_han_the[tong_so_doc_gia]
+        );
+        tong_so_doc_gia++;
+    }
+
+    fclose(f);
+    printf("✅ Đã nạp %d độc giả từ file %s\n", tong_so_doc_gia, filename);
+}
+
