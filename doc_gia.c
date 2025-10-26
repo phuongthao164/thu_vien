@@ -2,10 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "doc_gia.h"
+#include "thong_ke.h"
 #include <time.h>
 
 #define MAX_LEN 100
 #define MAX_USERS 100
+
+extern void remove_buffer();
 
 // Đếm tổng số độc giả hiện có trong thư viện
 int tong_so_doc_gia = 0;
@@ -110,6 +113,7 @@ void them_doc_gia() {
 
     tong_so_doc_gia++;
     printf("-> Độc giả đã được thêm thành công\n");
+    remove_buffer();
 }
 
 // Hàm hiển thị danh sách độc giả
@@ -136,6 +140,7 @@ void danh_sach_doc_gia() {
         printf("  Ngày hết hạn thẻ: %s\n", ngay_het_han_the[i]);
     }
     }
+    remove_buffer();
 }
 
  //Hàm chỉnh sửa thông tin một độc giả
@@ -205,6 +210,7 @@ void chinh_sua_doc_gia(int id) {
     if (!found) {
         printf("-> Không tìm thấy độc giả nào có mã %d.\n", id);
     }
+    remove_buffer();
 }
 
 // Hàm xóa thông tin một độc giả
@@ -229,6 +235,7 @@ void xoa_doc_gia(int id) {
     if (!found) {
         printf("-> Không tìm thấy độc giả nào có mã %d.\n", id);
     }
+    remove_buffer();
 }
 
 // Hàm tìm kiếm độc giả theo CMND
@@ -255,6 +262,7 @@ void tim_kiem_theo_cmnd(char *cmnd_can_tim) {
     if (!found) {
         printf("-> Không tìm thấy độc giả nào có CMND: %s.\n", cmnd_can_tim);
     }
+    remove_buffer();
 }
 
 // Hàm tìm kiếm độc giả theo họ tên
@@ -280,14 +288,16 @@ void tim_kiem_theo_ten_doc_gia(char *ten_can_tim) {
     if (!found) {
         printf("-> Không tìm thấy độc giả nào có tên: %s.\n", ten_can_tim);
     }
+    remove_buffer();
 }
 
 // Hàm quản lý đôc giả
 void quan_ly_doc_gia() {
-    int choice;
+    int chon;
     int id;
     char cmnd[100];
     char ho_ten[100];
+    printf("\n===== MENU ĐỘC GIẢ =====\n");
     printf("\n1. Thêm độc giả\n");
     printf("2. Xem danh sách độc giả\n");
     printf("3. Chỉnh sửa thông tin độc giả\n");
@@ -295,10 +305,15 @@ void quan_ly_doc_gia() {
     printf("5. Tìm kiếm thông tin độc giả theo CMND\n");
     printf("6. Tìm kiếm thông tin độc giả theo tên\n");
     printf("0. Quay lại\n");
-    printf("Chọn chức năng: ");
-    scanf("%d", &choice);
+    // printf("Chọn chức năng: ");
+    // scanf("%d", &choice);
+
+    if (!read_int_safe("Chọn chức năng: ", &chon)) {
+        printf("  -> Nhập không hợp lệ!\n");
+        return;
+    }
     
-    switch(choice) {
+    switch(chon) {
         case 1:
             them_doc_gia();  // Hàm thêm độc giả
             break;
@@ -362,3 +377,10 @@ void doc_du_lieu_doc_gia_tu_file(const char *filename) {
     printf("✅ Đã nạp %d độc giả từ file %s\n", tong_so_doc_gia, filename);
 }
 
+// helper: đọc int an toàn
+int read_int_safe(const char *prompt, int *out) {
+    char buf[64];
+    printf("%s", prompt);
+    if (!fgets(buf, sizeof(buf), stdin)) return 0;
+    return (sscanf(buf, "%d", out) == 1);
+}

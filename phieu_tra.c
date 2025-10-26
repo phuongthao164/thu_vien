@@ -6,6 +6,9 @@
 #include "sach.h"     // dùng find_index_by_isbn, gia_sach[], so_quyen[]
 #include "doc_gia.h"  // chỉ để đồng bộ include, không phụ thuộc biến trong đó
 #include "phieu_tra.h"
+#include "thong_ke.h"
+
+extern void remove_buffer();
 
 // ====== Cấu hình ======
 #define MAX_LEN           100
@@ -25,6 +28,10 @@ int   pt_ds_sl_sach[MAX_PHIEU][MAX_SACH_MUON];
 long long pt_tong_tien_phat[MAX_PHIEU];
 
 int tong_phieu_tra = 0;
+
+
+// Biến bổ sung
+long long tong_phat_mat = 0;
 
 // Các biến từ sach.c
 extern int tong_so_sach;
@@ -165,69 +172,72 @@ void lap_phieu_tra() {
             tong_phat_tre = 0;
         } else {
             printf("  -> Trả trễ %ld ngày.\n", so_ngay_tre);
-            printf("  -> Số tiền bị phạt khi trả trễ sách là %lld VND.\n",tong_phat_tre);
+            printf("  -> Số tiền bị phạt khi trả trễ sách là %lld VND. (5000 VND/ ngày)\n",tong_phat_tre);
         }
 
         // Phạt tiền khi mất sách
-        long long tong_phat_mat = 0;
+        
         for (int j = 0; j < pt_so_luong_sach[i]; j++) {
             int idx = find_index_by_isbn(pt_ds_isbn[i][j]);
             if (idx < 0) continue;
 
             if(strcmp(pt_ds_isbn[i][j], "") != 0){
-                char ans[8];
-                printf("  Sách ISBN %s có bị mất không? (Y. Có / N. Không): ", pt_ds_isbn[i][j]);
+                int mat_sach;
+                printf("  Sách ISBN %s có bị mất không? (Nhập 1: Có hoặc Số bất kì: Không): ", pt_ds_isbn[i][j]);
+                scanf("%d",&mat_sach);
                 // int c; while ((c = getchar()) != '\n' && c != EOF);
                 // if (fgets(ans, sizeof(ans), stdin) == NULL) ans[0] = '\0';
 
                 // Dọn sạch buffer trước khi đọc chuỗi mới
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
+                // int c;
+                // while ((c = getchar()) != '\n' && c != EOF);
 
                 // Đọc input Y/N
-                if (fgets(ans, sizeof(ans), stdin) == NULL) {
-                    ans[0] = '\0';
-                } else {
-                    // Bỏ ký tự xuống dòng cuối nếu có
-                    ans[strcspn(ans, "\r\n")] = '\0';
-                }
+                // if (fgets(ans, sizeof(ans), stdin) == NULL) {
+                //     ans[0] = '\0';
+                // } else {
+                //     // Bỏ ký tự xuống dòng cuối nếu có
+                //     ans[strcspn(ans, "\r\n")] = '\0';
+                // }
 
-                if (ans[0] == 'y' || ans[0] == 'Y') {
+                if (mat_sach == 1) {
                     int so_quyen_mat = 0;
 
                     // Lặp cho tới khi nhập hợp lệ
                     while (1) {
                         printf("Số quyển bị mất là: ");
-                        if (scanf("%d", &so_quyen_mat) != 1) {
-                            // Xử lý khi nhập ký tự không phải số
-                            printf("  -> Vui lòng nhập số nguyên hợp lệ!\n");
-                            int ch;
-                            while ((ch = getchar()) != '\n' && ch != EOF); // dọn buffer
-                            continue;
-                        }
+                        scanf("%d", &so_quyen_mat);
+                        // if (scanf("%d", &so_quyen_mat) != 1) {
+                        //     // Xử lý khi nhập ký tự không phải số
+                        //     printf("  -> Vui lòng nhập số hợp lệ!\n");
+                        //     int ch;
+                        //     while ((ch = getchar()) != '\n' && ch != EOF); // dọn buffer
+                        //     continue;
+                        // }
 
                         // Dọn \n còn lại sau khi nhập đúng số
-                        int ch;
-                        while ((ch = getchar()) != '\n' && ch != EOF);
+                        // int ch;
+                        // while ((ch = getchar()) != '\n' && ch != EOF);
 
                         if (so_quyen_mat <= 0) {
                             printf("  -> Số quyển phải lớn hơn 0.\n");
                         } else if (so_quyen_mat > pt_ds_sl_sach[i][j]) {
-                            printf("  -> Không thể mất nhiều hơn số đã mượn (%d quyển).\n",
+                            printf("  -> Số lượng sách mất không thể nhiều hơn số đã mượn (%d quyển).\n",
                                 pt_ds_sl_sach[i][j]);
                         } else {
-                            break; // ✅ hợp lệ
+                            break; // hợp lệ
                         }
                     }
 
                     if (idx >= 0) {
-                        long long phat_mat = (long long)(2.0 * gia_sach[idx] * so_quyen_mat + 0.5);
+                        // long long phat_mat = (long long)(2.0 * gia_sach[idx] * so_quyen_mat + 0.5);
+                        long long phat_mat = (long long)(2.0 * gia_sach[idx] * so_quyen_mat);
                         tong_phat_mat += phat_mat;
 
                         printf("  -> Mất %d quyển! Phạt 200%% giá sách: %lld VND\n",
                             so_quyen_mat, phat_mat);
 
-                        // ✅ Nếu chưa mất hết → cộng lại số còn lại vào kho
+                        // Nếu chưa mất hết → cộng lại số còn lại vào kho
                         int so_con_lai = pt_ds_sl_sach[i][j] - so_quyen_mat;
                         if (so_con_lai > 0) {
                             so_quyen[idx] += so_con_lai;
@@ -239,7 +249,7 @@ void lap_phieu_tra() {
                     // Không mất → cộng toàn bộ vào kho
                     if (idx >= 0) {
                         so_quyen[idx] += pt_ds_sl_sach[i][j];
-                        printf("  -> Đã trả sách. Số quyển hiện có trong kho: %d\n", so_quyen[idx]);
+                        printf("  -> Đã trả toàn bộ sách. Số quyển hiện có trong kho: %d\n", so_quyen[idx]);
                     }
                 }
             }
@@ -268,6 +278,7 @@ void lap_phieu_tra() {
     if (!found) {
         printf("-> Không tìm thấy phiếu mượn nào của độc giả %d.\n", ma);
     }
+    remove_buffer();
 }
 
 void danh_sach_phieu_tra() {
@@ -292,19 +303,25 @@ void danh_sach_phieu_tra() {
             if(pt_tong_tien_phat[i] != 0){
                 printf("  Tổng tiền phạt: %lld VND\n", pt_tong_tien_phat[i]);
             }
+            //-------------------------------------------------------
+            if(tong_phat_mat != 0){
+                printf("Sách bị mất phạt %d đồng\n", tong_phat_mat);
+            }
         }
     }
+    remove_buffer();
 }
 
 void quan_ly_phieu_tra() {
     int chon;
-    printf("\n1. Lập phiếu trả sách\n");
+    printf("\n===== MENU PHIẾU TRẢ SÁCH =====\n");
+    printf("1. Lập phiếu trả sách\n");
     printf("2. Xem danh sách phiếu\n");
     printf("0. Quay lại\n");
     printf("Chọn: ");
-    if (scanf("%d", &chon) != 1) {
-        int _c; while ((_c = getchar()) != '\n' && _c != EOF);
-        printf("Lựa chọn không hợp lệ.\n");
+
+    if (!read_int_safe("Chọn chức năng: ", &chon)) {
+        printf("  -> Nhập không hợp lệ!\n");
         return;
     }
 
@@ -321,3 +338,5 @@ void quan_ly_phieu_tra() {
             printf("Lựa chọn không hợp lệ.\n");
     }
 }
+
+extern int read_int_safe(const char *prompt, int *out);

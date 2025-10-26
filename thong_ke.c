@@ -8,6 +8,15 @@
 #include "phieu_tra.h"
 #include "thong_ke.h"
 
+
+// Hàm chặn gọi lặp do buffer còn sót ---
+void remove_buffer() {
+    printf("\n(Nhấn Enter để quay lại menu) ");
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF) {}
+    getchar();
+} 
+
 // ====== Cấu hình ======
 #define MAX_LEN           100
 #define MAX_SACH_MUON     10
@@ -24,7 +33,7 @@ extern char pm_ngay_tra_thuc_te[][20];
 extern int pm_so_luong_sach[];
 extern char pm_ds_isbn[][10][50];
 extern long long pm_tong_tien_phat[];
-extern int pm_ds_sl_sach[100][50];
+extern int pm_ds_sl_sach[][10];
 
 // extern từ phieu_tra.c
 extern int tong_phieu_tra;
@@ -35,7 +44,7 @@ extern char pt_ngay_tra_thuc_te[][20];
 extern int pt_so_luong_sach[];
 extern char pt_ds_isbn[][10][50];
 extern long long pt_tong_tien_phat[];
-extern int pt_ds_sl_sach[][50];
+extern int pt_ds_sl_sach[][10];
 
 // extern từ sach.c
 extern char isbn[][200];
@@ -66,7 +75,6 @@ char* ngay_ht() {
     return ngay_hien_tai;
 }
 
-
 // --- a. Tổng số sách ---
 void thong_ke_tong_sach() {
     printf("\n=== THỐNG KÊ TỔNG SỐ SÁCH ===\n");
@@ -77,6 +85,7 @@ void thong_ke_tong_sach() {
         tong_tat_ca += so_quyen[i];
 
     printf("Tổng số quyển sách hiện còn trong kho: %d\n", tong_tat_ca);
+    remove_buffer();
 }
 
 // --- b. Thống kê theo thể loại ---
@@ -111,12 +120,14 @@ void thong_ke_the_loai() {
     for (int i = 0; i < so_loai; i++) {
         printf("%d. Thể loại %-20s: %d quyển\n", i + 1, ds_loai[i], dem_sach[i]);
     }
+    remove_buffer();
 }
 
 // --- c. Tổng số độc giả ---
 void thong_ke_tong_doc_gia() {
     printf("\n=== THỐNG KÊ TỔNG SỐ LƯỢNG ĐỘC GIẢ ===\n");
     printf("\nTổng số lượng độc giả: %d\n", tong_so_doc_gia);
+    remove_buffer();
 }
 
 // --- d. Độc giả theo giới tính ---
@@ -138,6 +149,7 @@ void thong_ke_doc_gia_theo_gioi_tinh() {
     printf("Nam : %d\n", nam);
     printf("Nữ  : %d\n", nu);
     printf("Khác: %d\n", khac);
+    remove_buffer();
 }
 
 // --- e. Sách đang được mượn ---
@@ -181,8 +193,8 @@ void thong_ke_sach_dang_muon() {
         return;
     }
 
-    printf("\n%-10s | %-40s | %-10s\n", "ISBN", "Tên sách", "SL đang mượn");
-    printf("---------------------------------------------------------------\n");
+    // printf("\n%-10s | %-40s | %-10s\n", "ISBN", "Tên sách", "SL đang mượn");
+    // printf("---------------------------------------------------------------\n");
 
     // In danh sách thống kê
     for (int k = 0; k < tong_sach_dang_muon; k++) {
@@ -195,8 +207,10 @@ void thong_ke_sach_dang_muon() {
             }
         }
 
-        printf("%-10s | %-40s | %-10d\n", isbn_dang_muon[k], ten, so_luong_dang_muon[k]);
-    }
+        printf("  - Mã %s: Sách %s đang được mượn với số lượng %d quyển.\n",ten, isbn_dang_muon[k], so_luong_dang_muon[k]);
+        
+    };
+    remove_buffer();
 }
 
 // --- f. Độc giả trả trễ ---
@@ -221,13 +235,15 @@ void thong_ke_doc_gia_tre_han() {
         }
     }
 
-    if (!found)
+    if (!found){
         printf("Không có độc giả nào trả trễ.\n");
+    }
+    remove_buffer();
 }
 
 // --- Menu thống kê ---
 void thong_ke_co_ban() {
-    int choice;
+    int chon;
     printf("\n===== MENU THỐNG KÊ =====\n");
     printf("1. Tổng số sách trong thư viện\n");
     printf("2. Số lượng sách theo thể loại\n");
@@ -236,19 +252,17 @@ void thong_ke_co_ban() {
     printf("5. Sách đang được mượn\n");
     printf("6. Độc giả bị trễ hạn\n");
     printf("0. Quay lại\n");
-    printf("Chọn chức năng: ");
+    // printf("Chọn chức năng: ");
     // scanf("%d", &choice);
 
     // Xóa bộ nhớ buffer gây lỗi loop
-    if (scanf("%d", &choice) != 1) {
-        int _c; while ((_c = getchar()) != '\n' && _c != EOF);
-        printf("Lựa chọn không hợp lệ!\n");
+    extern int read_int_safe(const char *prompt, int *out);
+    if (!read_int_safe("Chọn chức năng: ", &chon)) {
+        printf("  -> Nhập không hợp lệ!\n");
         return;
     }
-    int _c; while ((_c = getchar()) != '\n' && _c != EOF);
 
-
-    switch (choice) {
+    switch (chon) {
         case 1: thong_ke_tong_sach(); break;
         case 2: thong_ke_the_loai(); break;
         case 3: thong_ke_tong_doc_gia(); break;
@@ -259,3 +273,4 @@ void thong_ke_co_ban() {
         default: printf("Lựa chọn không hợp lệ!\n");
     }
 }
+

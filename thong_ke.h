@@ -15,4 +15,6 @@ void thong_ke_doc_gia_tre_han();
 
 void thong_ke_co_ban();
 
+void remove_buffer();
+
 #endif // THONG_KE_H

@@ -22,4 +22,7 @@ void tim_kiem_theo_ten_doc_gia(char *ten_can_tim);
 // Hàm quản lý đôc giả
 void quan_ly_doc_gia();
 
+// helper: đọc int an toàn
+int read_int_safe(const char *prompt, int *out);
+
 #endif // DOC_GIA_H

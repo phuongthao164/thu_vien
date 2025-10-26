@@ -6,6 +6,9 @@
 #include "sach.h"     // dùng find_index_by_isbn, gia_sach[], so_quyen[]
 #include "doc_gia.h"  // chỉ để đồng bộ include, không phụ thuộc biến trong đó
 #include "phieu_muon.h"
+#include "thong_ke.h"
+
+extern void remove_buffer();
 
 // ====== Cấu hình ======
 #define MAX_LEN           100
@@ -18,7 +21,7 @@
 int   pm_ma_doc_gia[MAX_PHIEU];
 char  pm_ngay_muon[MAX_PHIEU][20];
 char  pm_ngay_tra_du_kien[MAX_PHIEU][20];
-char  pm_ngay_tra_thuc_te[MAX_PHIEU][20]; // "" nếu chưa trả
+char  pm_ngay_tra_thuc_te[MAX_PHIEU][20];
 int   pm_so_luong_sach[MAX_PHIEU]; // số sách muốn mượn
 char  pm_ds_isbn[MAX_PHIEU][MAX_SACH_MUON][50];
 int   pm_ds_sl_sach[MAX_PHIEU][MAX_SACH_MUON];
@@ -104,6 +107,9 @@ void lap_phieu_muon() {
     // ngày trả dự kiến
     ngay_tra_dk(tong_phieu_muon);
 
+    // Ngày trả thực tế
+    pm_ngay_tra_thuc_te[tong_phieu_muon][0] = '\0';
+
     // if (p_so_luong_sach[i] < 1 || p_so_luong_sach[i] > MAX_SACH_MUON) {
     //     printf("So luong khong hop le.\n");
     //     return;
@@ -171,6 +177,7 @@ void lap_phieu_muon() {
 
     tong_phieu_muon++;
     printf("=-> Lập phiếu mượn thành công!\n");
+    remove_buffer();
 }
 
 // Hàm xem danh sách phiếu mượn
@@ -196,6 +203,7 @@ void danh_sach_phieu_muon() {
             printf("  Tổng tiền phạt: %lld VND\n", pm_tong_tien_phat[i]);
         }
     }
+    remove_buffer();
 }
 
 // Hàm đọc dữ liệu phiếu mượn từ file
@@ -238,7 +246,11 @@ void doc_du_lieu_phieu_muon_tu_file(const char *filename) {
         strncpy(pm_ngay_muon[idx],        fields[1], 19); pm_ngay_muon[idx][19]        = '\0';
         strncpy(pm_ngay_tra_du_kien[idx], fields[2], 19); pm_ngay_tra_du_kien[idx][19] = '\0';
         // có thể rỗng: ""
-        strncpy(pm_ngay_tra_thuc_te[idx], fields[3], 19); pm_ngay_tra_thuc_te[idx][19] = '\0';
+        if (fields[3] && fields[3][0] != '\0')
+            strncpy(pm_ngay_tra_thuc_te[idx], fields[3], 19);
+        else
+            pm_ngay_tra_thuc_te[idx][0] = '\0';
+
 
         pm_so_luong_sach[idx] = atoi(fields[4]);
 
@@ -291,17 +303,16 @@ void doc_du_lieu_phieu_muon_tu_file(const char *filename) {
 // Hàm quản lý phiếu
 void quan_ly_phieu_muon() {
     int chon;
-    printf("\n1. Lập phiếu mượn sách\n");
+    printf("\n===== MENU PHIẾU MƯỢN SÁCH =====\n");
+    printf("1. Lập phiếu mượn sách\n");
     printf("2. Xem danh sách phiếu mượn\n");
     printf("0. Quay lại\n");
     printf("Chọn: ");
-    if (scanf("%d", &chon) != 1) {
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
-        printf("  -> Nhập sai! Hãy nhập số.\n");
+
+    if (!read_int_safe("Chọn chức năng: ", &chon)) {
+        printf("  -> Nhập không hợp lệ!\n");
+        return;
     }
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
 
     switch (chon) {
         case 1:
@@ -316,3 +327,5 @@ void quan_ly_phieu_muon() {
             printf("Lựa chọn không hợp lệ.\n");
     }
 }
+
+extern int read_int_safe(const char *prompt, int *out);

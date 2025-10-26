@@ -8,6 +8,7 @@
 
 // Hàm hiển thị menu
 void display_menu(){
+    printf("\n===== CHỌN CHỨC NĂNG ĐỂ BẮT ĐẦU =====\n");
     printf("1. Quản lý độc giả\n");
     printf("2. Quản lý sách\n");
     printf("3. Lập phiếu mượn\n");
@@ -18,31 +19,38 @@ void display_menu(){
 
 // Hàm chính
 int main(){
-    int choice;
+    int chon;
     doc_du_lieu_sach_tu_file("data_sach.txt");
     doc_du_lieu_doc_gia_tu_file("data_doc_gia.txt");
     doc_du_lieu_phieu_muon_tu_file("data_phieu_muon.txt");
+    printf("\n===== CHÀO MỪNG BẠN ĐẾN VỚI HỆ THỐNG THƯ VIỆN ABC =====\n");
     do {
         display_menu();
         // printf("Chọn chức năng: ");
         // scanf("%d", &choice);
-        while (1) {
-            printf("Chọn chức năng: ");
-            if (scanf("%d", &choice) != 1) {
-                printf("  -> Nhập không hợp lệ! Vui lòng nhập số.\n");
-                // Xóa phần rác còn trong stdin
-                int ch;
-                while ((ch = getchar()) != '\n' && ch != EOF);
-                continue; // quay lại hỏi tiếp
-            }
+        extern int read_int_safe(const char *prompt, int *out);
+        // printf("Chọn chức năng: ");
+        if (!read_int_safe("Chọn chức năng: ", &chon)) {
+            printf("  -> Nhập không hợp lệ!\n");
+            continue;
+        }        
+        // while (1) {
+        //     printf("Chọn chức năng: ");
+        //     if (scanf("%d", &choice) != 1) {
+        //         printf("  -> Nhập không hợp lệ! Vui lòng nhập số.\n");
+        //         // Xóa phần rác còn trong stdin
+        //         int ch;
+        //         while ((ch = getchar()) != '\n' && ch != EOF);
+        //         continue; // quay lại hỏi tiếp
+        //     }
 
-            // Dọn ký tự '\n' còn dư sau khi nhập đúng
-            int ch;
-            while ((ch = getchar()) != '\n' && ch != EOF);
-            break; // nhập hợp lệ thì thoát vòng
-        }
+        //     // Dọn ký tự '\n' còn dư sau khi nhập đúng
+        //     int ch;
+        //     while ((ch = getchar()) != '\n' && ch != EOF);
+        //     break; // nhập hợp lệ thì thoát vòng
+        // }
 
-        switch(choice) {
+        switch(chon) {
             case 1:
                 quan_ly_doc_gia();  // Hàm quản lý độc giả
                 break;
@@ -64,6 +72,7 @@ int main(){
             default:
                 printf("Chọn không hợp lệ. Thử lại nhé!\n");
         }
-    } while (choice != 0);
+    } while (chon != 0);
     return 0;
 }
+

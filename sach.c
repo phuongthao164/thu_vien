@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "sach.h"
+#include "thong_ke.h"
 
 #define MAX_LEN 200
 #define MAX_SACH 500
+
+extern void remove_buffer();
 
 // Dữ liệu sách (mảng tĩnh)
 char isbn[MAX_SACH][MAX_LEN];
@@ -49,6 +52,7 @@ void them_sach() {
     tong_so_quyen_goc[tong_so_sach] = so_quyen[tong_so_sach];
     tong_so_sach++;
     printf("Thông tin sách đã được thêm thành công!\n");
+    remove_buffer();
 }
     
 // Hàm hiển thị danh sách sách
@@ -64,6 +68,7 @@ void danh_sach_sach() {
         printf("  Tên sách: %s\n  Tác giả: %s\n  NXB: %s\n  Năm xuất bản: %d\n  Thể loại: %s\n  Giá sách: %.0f đồng\n  Số quyển sách: %d quyển\n",
                 ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
         }
+    remove_buffer();
     }
 
  //Hàm chỉnh sửa thông tin sách
@@ -147,6 +152,7 @@ void chinh_sua_sach(char *isbn_sach) {
     if (!found) {
         printf("Không tìm thấy loại sách nào có mã %s.\n", isbn_sach);
     };
+    remove_buffer();
 }
 
 // Tìm index sách theo ISBN (trả index hoặc -1)
@@ -190,6 +196,7 @@ void xoa_sach(char *isbn_sach) {
 
     tong_so_sach--;
     printf("Đã xóa sách có ISBN: %s\n", isbn_sach);
+    remove_buffer();
 }
 
 // Hàm tìm kiếm sách theo ISBN
@@ -206,6 +213,7 @@ void tim_kiem_theo_isbn(char *isbn_sach) {
                 isbn[i], ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
         }
     }
+    remove_buffer();
 }
 
 // Hàm tìm kiếm sách theo tên sách
@@ -221,13 +229,15 @@ void tim_kiem_theo_ten_sach(char *ten_can_tim) {
     if (!found) {
         printf("-> Không tìm thấy sách nào có tên: %s \n", ten_can_tim);
     }
+    remove_buffer();
 }
 
 // Hàm quản lý sách
 void quan_ly_sach() {
-    int choice;
+    int chon;
     char isbn_sach[100];
     char ten_can_tim[100];
+    printf("\n===== MENU SÁCH =====\n");
     printf("\n1. Xem danh sách sách\n");
     printf("2. Thêm sách\n");
     printf("3. Chỉnh sửa thông tin sách\n");
@@ -235,10 +245,15 @@ void quan_ly_sach() {
     printf("5. Tìm kiếm sách theo ISBN\n");
     printf("6. Tìm kiếm sách theo tên sách\n");
     printf("0. Quay lại\n");
-    printf("Chọn chức năng: ");
-    scanf("%d", &choice);
+    // printf("Chọn chức năng: ");
+    // scanf("%d", &choice);
+    extern int read_int_safe(const char *prompt, int *out);
+    if (!read_int_safe("Chọn chức năng: ", &chon)) {
+        printf("  -> Nhập không hợp lệ!\n");
+        return;
+    }
     
-    switch(choice) {
+    switch(chon) {
         case 1:
             danh_sach_sach();
             break;
@@ -301,3 +316,4 @@ void doc_du_lieu_sach_tu_file(const char *filename) {
     fclose(f);
     printf("✅ Đã nạp %d sách từ file %s\n", tong_so_sach, filename);
 }
+
