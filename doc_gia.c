@@ -1,19 +1,17 @@
-// Quản lý độc giả
 #include <stdio.h>
 #include <string.h>
 #include "doc_gia.h"
 #include "thong_ke.h"
 #include <time.h>
 
+// Khai báo giá trị mặc định
 #define MAX_LEN 100
 #define MAX_USERS 100
-
-extern void remove_buffer();
 
 // Đếm tổng số độc giả hiện có trong thư viện
 int tong_so_doc_gia = 0;
 
-// Mảng lưu trữ thông tin độc giả
+// Biến lưu trữ thông tin độc giả
 int id_doc_gia[MAX_USERS];
 char ho_ten[MAX_USERS][MAX_LEN];
 char cmnd[MAX_USERS][MAX_LEN];
@@ -24,7 +22,8 @@ char dia_chi[MAX_USERS][MAX_LEN];
 char ngay_lap_the[MAX_USERS][MAX_LEN];
 char ngay_het_han_the[MAX_USERS][MAX_LEN];
 
-// Hàm tính ngày lập thẻ và ngày hết hạn thẻ
+// CÁC HÀM BỔ SUNG CHO HÀM CHÍNH
+// a. Hàm tính ngày lập thẻ
 void ngay_lap(int index) {
     time_t t_hien_tai = time(NULL);
     char *time_str_ht = ctime(&t_hien_tai);
@@ -36,9 +35,10 @@ void ngay_lap(int index) {
     int month_ht = (strstr(months, month_str_ht) - months) / 3 + 1;
 
     snprintf(ngay_lap_the[index], MAX_LEN, "%02d/%02d/%04d", day_ht, month_ht, year_ht);
-    printf("Ngày lập thẻ là: %s\n", ngay_lap_the[index]);
+    printf("  Ngày lập thẻ là: %s\n", ngay_lap_the[index]);
 }
 
+// b. Hàm tính ngày hết hạn thẻ
 void ngay_het_han(int index) {
     time_t t_hien_tai = time(NULL);
     time_t t_het_han = t_hien_tai + (time_t)(4 * 365 + 1) * 24 * 60 * 60;
@@ -51,21 +51,34 @@ void ngay_het_han(int index) {
     int month_hh = (strstr(months, month_str_hh) - months) / 3 + 1;
 
     snprintf(ngay_het_han_the[index], MAX_LEN, "%02d/%02d/%04d", day_hh, month_hh, year_hh);
-    printf("Ngày hết hạn thẻ là: %s\n", ngay_het_han_the[index]);
+    printf("  Ngày hết hạn thẻ là: %s\n", ngay_het_han_the[index]);
 }
 
-// Hàm thêm độc giả
+// c. Hàm xóa bộ nhớ đệm
+extern void remove_buffer();
+
+// d. Hàm bổ sung chức năng chọn option menu quản lý
+int read_int_safe(const char *prompt, int *out) {
+    char buf[64];
+    printf("%s", prompt);
+    if (!fgets(buf, sizeof(buf), stdin)) return 0;
+    return (sscanf(buf, "%d", out) == 1);
+}
+
+
+// CÁC HÀM CHÍNH
+// 1b. Hàm thêm độc giả
 void them_doc_gia() {
     if (tong_so_doc_gia >= MAX_USERS) {
-    printf("Đã đạt số lượng độc giả tối đa (%d).\n", MAX_USERS);
+    printf("  Đã đạt số lượng độc giả tối đa (%d).\n", MAX_USERS);
     return;
     }
 
-    // Mã độc giả sẽ được tự động đếm số tăng dần
+    // Mã độc giả
     int ma_doc_gia = tong_so_doc_gia + 1;
-    printf("  Mã độc giả của bạn là: %d \n",ma_doc_gia);
+    printf("\n  --Mã độc giả của bạn là: %d \n",ma_doc_gia);
 
-    // Lưu ID độc giả vào mảng id_doc_gia
+    // ID độc giả
     id_doc_gia[tong_so_doc_gia] = ma_doc_gia;
 
     // Thêm thông tin độc giả vào danh sách
@@ -84,20 +97,23 @@ void them_doc_gia() {
     scanf("%99s", ngay_sinh[tong_so_doc_gia]);  
 
     // Giới tính
-    printf("  Nhập giới tính (Nam/Nữ): ");
-    scanf("%99s", gioi_tinh[tong_so_doc_gia]);
-
-    // // Giới tính -------------------------------NEW -------------------------------------
-    // printf("Nhap gioi tinh (Nhap 1.Nam , 2.Nu hoac Ki tu khac de bo qua): ");
-    // int chon_gioi_tinh;
-    // scanf("%d", &chon_gioi_tinh);  
-    // if (chon_gioi_tinh == 1){
-    //     *gioi_tinh[tong_so_doc_gia] = "Nam";
-    // } else if (chon_gioi_tinh == 2){
-    //     *gioi_tinh[tong_so_doc_gia] = "Nu";
-    // } else {
-    //     *gioi_tinh[tong_so_doc_gia] = "Khong xac dinh";
-    // }
+    printf("  Nhập giới tính (Nhập 1.Nam , 2.Nữ , 3. Khác): ");
+    int chon_gioi_tinh;
+    scanf("%d", &chon_gioi_tinh);  
+    while(1){
+        if (chon_gioi_tinh == 1){
+            strcpy(gioi_tinh[tong_so_doc_gia], "Nam");
+            break;
+        } else if (chon_gioi_tinh == 2){
+            strcpy(gioi_tinh[tong_so_doc_gia], "Nữ");
+            break;
+        } else if (chon_gioi_tinh == 3){
+            strcpy(gioi_tinh[tong_so_doc_gia], "Khác");
+            break;
+        } else {
+            printf("Nhập không đúng, vui lòng nhập lại!\n");
+        }
+    }
 
     // Email
     printf("  Nhập email: ");
@@ -107,8 +123,10 @@ void them_doc_gia() {
     printf("  Nhập địa chỉ: ");
     scanf(" %[^\n]%*c", dia_chi[tong_so_doc_gia]);  
 
-    // Ngày lập thẻ và ngày hết hạn
+    // Ngày lập thẻ và 
     ngay_lap(tong_so_doc_gia);
+
+    // Ngày hết hạn
     ngay_het_han(tong_so_doc_gia);
 
     tong_so_doc_gia++;
@@ -116,43 +134,41 @@ void them_doc_gia() {
     remove_buffer();
 }
 
-// Hàm hiển thị danh sách độc giả
+// 1a. Hàm hiển thị danh sách độc giả
 void danh_sach_doc_gia() {
     if (tong_so_doc_gia == 0) {
-        printf("Không có độc giả nào trong thư viện.\n");
+        printf("  Không có độc giả nào trong thư viện.\n");
         return;
     }
 
     printf("  Số độc giả hiện tại của thư viện là: %d\n",tong_so_doc_gia);
-    printf("--Danh sách độc giả:\n");
+    printf("=== Danh sách độc giả ===\n");
     for (int i = 0; i < tong_so_doc_gia; i++) {
-    printf("* Độc giả thứ %d (ID: %d)\n", i+1, id_doc_gia[i]);
-    if (ho_ten[i][0] == '\0') {
-        printf("  >> Thông tin độc giả đã bị xóa \n");
-    } else {
-        printf("  Họ tên: %s\n", ho_ten[i]);
-        printf("  CMND: %s\n", cmnd[i]);
-        printf("  Ngày sinh: %s\n", ngay_sinh[i]);
-        printf("  Giới tính: %s\n", gioi_tinh[i]);
-        printf("  Email: %s\n", email[i]);
-        printf("  Địa chỉ: %s\n", dia_chi[i]);
-        printf("  Ngày lập thẻ: %s\n", ngay_lap_the[i]);
-        printf("  Ngày hết hạn thẻ: %s\n", ngay_het_han_the[i]);
-    }
+        printf("* Độc giả thứ %d (ID: %d)\n", i+1, id_doc_gia[i]);
+        if (ho_ten[i][0] == '\0') {
+            printf("  >> Thông tin độc giả đã bị xóa \n");
+        } else {
+            printf("  Họ tên: %s\n", ho_ten[i]);
+            printf("  CMND: %s\n", cmnd[i]);
+            printf("  Ngày sinh: %s\n", ngay_sinh[i]);
+            printf("  Giới tính: %s\n", gioi_tinh[i]);
+            printf("  Email: %s\n", email[i]);
+            printf("  Địa chỉ: %s\n", dia_chi[i]);
+            printf("  Ngày lập thẻ: %s\n", ngay_lap_the[i]);
+            printf("  Ngày hết hạn thẻ: %s\n", ngay_het_han_the[i]);
+        }
     }
     remove_buffer();
 }
 
- //Hàm chỉnh sửa thông tin một độc giả
+// 1c. Hàm chỉnh sửa thông tin một độc giả
 void chinh_sua_doc_gia(int id) {
     int found = 0;
     for (int i = 0; i < tong_so_doc_gia; i++) {
-        if (id == id_doc_gia[i]) {  // Tìm theo mã độc giả
+        if (id == id_doc_gia[i]) {  
             found = 1;
-            // Bản ghi đã bị xóa
+            // Đối với độc giả đã bị xóa -> Cho nhập lại thông tin độc giả mới
             if (ho_ten[i][0] == '\0') {
-                // printf("Thong tin cua doc gia %d da bi xoa.",id);
-                // break;
                 printf("-> Thông tin của độc giả %d đã bị xóa. Bạn có muốn cập nhật thông tin mới cho độc giả này không?\n", id);
                 printf("Nhập 1. Tiếp tục hoặc Nhập kí tự bất kì để Thoát. \n");
                 int chon;
@@ -179,7 +195,6 @@ void chinh_sua_doc_gia(int id) {
                     // Dọn bộ nhớ đệm
                     int _c;
                     while ((_c = getchar()) != '\n' && _c != EOF);
-                    // Thoát chỉnh sửa
                     printf("Kết thúc chỉnh sửa! \n");
                     break;
                 }
@@ -190,17 +205,17 @@ void chinh_sua_doc_gia(int id) {
                         ho_ten[i], cmnd[i], ngay_sinh[i], gioi_tinh[i], email[i], dia_chi[i], ngay_lap_the[i], ngay_het_han_the[i]);      
             printf("-- Nhập thông tin bạn muốn chỉnh sửa:\n");
             printf("  Nhập họ tên chỉnh sửa: ");
-            scanf(" %[^\n]%*c", ho_ten[i]);
+            scanf(" %[^\n]%*c", ho_ten[i]);  // Họ tên
             printf("  Nhập CMND chỉnh sửa: ");
-            scanf("%99s", cmnd[i]);
+            scanf("%99s", cmnd[i]);  // CMND
             printf("  Nhập ngày sinh chỉnh sửa (dd/mm/yyyy): ");
-            scanf("%99s", ngay_sinh[i]);
+            scanf("%99s", ngay_sinh[i]);  // Ngày sinh
             printf("  Nhập giới tính chỉnh sửa (Nam/Nữ): ");
-            scanf("%99s", gioi_tinh[i]);
+            scanf("%99s", gioi_tinh[i]);  // Giới tính
             printf("  Nhập email chỉnh sửa: ");
-            scanf("%99s", email[i]);
+            scanf("%99s", email[i]);  // Email
             printf("  Nhập địa chỉ chỉnh sửa: ");
-            scanf(" %[^\n]%*c", dia_chi[i]);
+            scanf(" %[^\n]%*c", dia_chi[i]);  // Địa chỉ
             printf("  Ngày lập thẻ và Ngày hết hạn không thể thay đổi!\n");
             printf("-> Thông tin độc giả đã được cập nhật!\n");
             break;
@@ -213,7 +228,7 @@ void chinh_sua_doc_gia(int id) {
     remove_buffer();
 }
 
-// Hàm xóa thông tin một độc giả
+// 1d. Hàm xóa thông tin một độc giả
 void xoa_doc_gia(int id) {
     int found = 0;
     for (int i = 0; i < tong_so_doc_gia; i++) {
@@ -238,13 +253,13 @@ void xoa_doc_gia(int id) {
     remove_buffer();
 }
 
-// Hàm tìm kiếm độc giả theo CMND
+// 1e. Hàm tìm kiếm độc giả theo CMND
 void tim_kiem_theo_cmnd(char *cmnd_can_tim) {
     int found = 0;
     for (int i = 0; i < tong_so_doc_gia; i++) {
         // Bỏ qua độc giả đã bị xóa (CMND rỗng)
         if (cmnd[i][0] == '\0') continue;
-
+        // Hiển thị thông tin của độc giả đã tìm thấy
         if (strcmp(cmnd_can_tim, cmnd[i]) == 0) {
             printf("  Tìm thấy độc giả có id = %d với thông tin: \n",id_doc_gia[i]);
             printf("  Họ tên: %s\n", ho_ten[i]);
@@ -265,14 +280,14 @@ void tim_kiem_theo_cmnd(char *cmnd_can_tim) {
     remove_buffer();
 }
 
-// Hàm tìm kiếm độc giả theo họ tên
+// 1f. Hàm tìm kiếm độc giả theo họ tên
 void tim_kiem_theo_ten_doc_gia(char *ten_can_tim) {
     int found = 0;
     for (int i = 0; i < tong_so_doc_gia; i++) {
         // Bỏ qua độc giả đã bị xóa (họ tên rỗng)
         if (ho_ten[i][0] == '\0') continue;
 
-        if (strstr(ho_ten[i], ten_can_tim) != NULL) { // ten_can_tim xuất hiện trong ho_ten[i]
+        if (strstr(ho_ten[i], ten_can_tim) != NULL) { 
             printf("  Tìm thấy độc giả có id = %d với thông tin: \n",id_doc_gia[i]);
             printf("  Họ tên: %s\n", ho_ten[i]);
             printf("  CMND: %s\n", cmnd[i]);
@@ -291,7 +306,7 @@ void tim_kiem_theo_ten_doc_gia(char *ten_can_tim) {
     remove_buffer();
 }
 
-// Hàm quản lý đôc giả
+// 1. Hàm menu quản lý độc giả
 void quan_ly_doc_gia() {
     int chon;
     int id;
@@ -305,8 +320,6 @@ void quan_ly_doc_gia() {
     printf("5. Tìm kiếm thông tin độc giả theo CMND\n");
     printf("6. Tìm kiếm thông tin độc giả theo tên\n");
     printf("0. Quay lại\n");
-    // printf("Chọn chức năng: ");
-    // scanf("%d", &choice);
 
     if (!read_int_safe("Chọn chức năng: ", &chon)) {
         printf("  -> Nhập không hợp lệ!\n");
@@ -333,12 +346,12 @@ void quan_ly_doc_gia() {
         case 5:
             printf("Nhập CMND của độc giả cần tìm: ");
             scanf("%99s", cmnd);
-            tim_kiem_theo_cmnd(cmnd);   // // Hàm tìm kiếm độc giả theo CMND
+            tim_kiem_theo_cmnd(cmnd);   // Hàm tìm kiếm độc giả theo CMND
             break;
         case 6:
             printf("Nhập tên độc giả cần tìm: ");
             scanf(" %[^\n]%*c", ho_ten);
-            tim_kiem_theo_ten_doc_gia(ho_ten);   // // Hàm tìm kiếm độc giả theo họ tên
+            tim_kiem_theo_ten_doc_gia(ho_ten);   // Hàm tìm kiếm độc giả theo họ tên
             break;
         case 0:
             return;
@@ -348,6 +361,8 @@ void quan_ly_doc_gia() {
 }
 
 
+
+// ----------------------------làm xong hết thì xóa -------------------------------------
 // Hàm đọc dữ liệu độc giả từ file
 void doc_du_lieu_doc_gia_tu_file(const char *filename) {
     FILE *f = fopen(filename, "r");
@@ -377,10 +392,3 @@ void doc_du_lieu_doc_gia_tu_file(const char *filename) {
     printf("✅ Đã nạp %d độc giả từ file %s\n", tong_so_doc_gia, filename);
 }
 
-// helper: đọc int an toàn
-int read_int_safe(const char *prompt, int *out) {
-    char buf[64];
-    printf("%s", prompt);
-    if (!fgets(buf, sizeof(buf), stdin)) return 0;
-    return (sscanf(buf, "%d", out) == 1);
-}

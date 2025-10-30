@@ -1,15 +1,16 @@
-// Quản lý sách
 #include <stdio.h>
 #include <string.h>
 #include "sach.h"
 #include "thong_ke.h"
 
+// Khai báo giá trị mặc định
 #define MAX_LEN 200
 #define MAX_SACH 500
 
-extern void remove_buffer();
+// Đếm tổng số sách hiện có trong thư viện
+int tong_so_sach = 0;
 
-// Dữ liệu sách (mảng tĩnh)
+// Biến lưu trữ thông tin sách
 char isbn[MAX_SACH][MAX_LEN];
 char ten_sach[MAX_SACH][MAX_LEN];
 char tac_gia[MAX_SACH][MAX_LEN];
@@ -20,116 +21,103 @@ double gia_sach[MAX_SACH];
 int so_quyen[MAX_SACH];
 int tong_so_quyen_goc[MAX_SACH];
 
-// Đếm tổng số sách hiện có trong thư viện
-int tong_so_sach = 0;
+// CÁC HÀM BỔ SUNG CHO HÀM CHÍNH
+// a. Hàm tìm kiếm theo ISBN
+int find_index_by_isbn(char *isbn_sach) {
+    for (int i = 0; i < tong_so_sach; i++) {
+        if (strcmp(isbn[i], isbn_sach) == 0) return i;
+    }
+    return -1;
+}
 
-// Hàm thêm sách
+// b. Hàm xóa bộ nhớ đệm
+extern void remove_buffer();
+
+// c. Hàm bổ sung chức năng chọn option menu quản lý
+extern int read_int_safe(const char *prompt, int *out);
+
+
+// CÁC HÀM CHÍNH
+// 2b. Hàm thêm sách
 void them_sach() {
     if (tong_so_sach >= MAX_SACH) {
-        printf("Đã đạt số lượng sách tối đa (%d).\n", MAX_SACH);
+        printf("  Đã đạt số lượng sách tối đa (%d).\n", MAX_SACH);
         return;
     }
 
-    // Thêm thông tin độc giả vào danh sách
-    printf("-- Vui lòng nhập thông tin sách mới: \n");
+    // Thêm thông tin sách vào danh sách
+    printf("\n-- Vui lòng nhập thông tin sách mới: \n");
 
+    // Mã sách
     printf("  Nhập mã sách (vd: MS_001): ");
-    scanf(" %[^\n]%*c", isbn[tong_so_sach]);  // Mã sách
+    scanf(" %[^\n]%*c", isbn[tong_so_sach]);  
+
+    // Tên sách
     printf("  Nhập tên sách: ");
-    scanf(" %[^\n]%*c", ten_sach[tong_so_sach]);  // Tên sách
+    scanf(" %[^\n]%*c", ten_sach[tong_so_sach]);  
+
+    // Tác giả
     printf("  Nhập tác giả: ");
-    scanf(" %[^\n]%*c", tac_gia[tong_so_sach]);  // Tác giả
+    scanf(" %[^\n]%*c", tac_gia[tong_so_sach]);  
+
+    // Nhà xuất bản
     printf("  Nhập nhà xuất bản: ");
-    scanf(" %[^\n]%*c", nha_xuat_ban[tong_so_sach]);  // Nhà xuất bản
+    scanf(" %[^\n]%*c", nha_xuat_ban[tong_so_sach]);  
+
+    // Năm xuất bản
     printf("  Nhập năm xuất bản: ");
-    scanf(" %d", &nam_xuat_ban[tong_so_sach]);  // Năm xuất bản
+    scanf(" %d", &nam_xuat_ban[tong_so_sach]);  
+
+    // Thể loại
     printf("  Nhập thể loại: ");
-    scanf(" %[^\n]%*c", the_loai[tong_so_sach]);  // Thể loại
+    scanf(" %[^\n]%*c", the_loai[tong_so_sach]);  
+
+    // Giá sách
     printf("  Nhập giá sách (vd: 150000): ");
-    scanf(" %lf", &gia_sach[tong_so_sach]);  // Giá sách
+    scanf(" %lf", &gia_sach[tong_so_sach]);  
+
+    // Số quyển sách
     printf("  Nhập số quyển sách (vd: 15): ");
-    scanf(" %d", &so_quyen[tong_so_sach]);  // So quyen sach
+    scanf(" %d", &so_quyen[tong_so_sach]);  
+
+
     tong_so_quyen_goc[tong_so_sach] = so_quyen[tong_so_sach];
     tong_so_sach++;
     printf("Thông tin sách đã được thêm thành công!\n");
     remove_buffer();
 }
     
-// Hàm hiển thị danh sách sách
+// 2a.Hàm hiển thị danh sách các loại sách
 void danh_sach_sach() {
     if (tong_so_sach == 0) {
-        printf("Không có sách trong thư viện.\n");
+        printf("  Không có sách trong thư viện.\n");
         return;
     }
-    printf("Số sách hiện tại trong thư viện là: %d\n",tong_so_sach);
-    printf("--Danh sách các loại sách trong thư viện:\n");
+
+    printf("  Số sách hiện tại trong thư viện là: %d\n",tong_so_sach);
+    printf("=== Danh sách các loại sách trong thư viện ===\n");
     for (int i = 0; i < tong_so_sach; i++) {
-        printf("** Loại sách thứ %d (ISBN: %s)\n", i+1, isbn[i]);
+        printf("* Loại sách thứ %d (ISBN: %s)\n", i+1, isbn[i]);
         printf("  Tên sách: %s\n  Tác giả: %s\n  NXB: %s\n  Năm xuất bản: %d\n  Thể loại: %s\n  Giá sách: %.0f đồng\n  Số quyển sách: %d quyển\n",
                 ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
         }
     remove_buffer();
     }
 
- //Hàm chỉnh sửa thông tin sách
+// 2c. Hàm chỉnh sửa thông tin sách
 void chinh_sua_sach(char *isbn_sach) {
-    int found = 0;
+    int idx = find_index_by_isbn(isbn_sach);
+    if (idx == -1) {
+        printf("Không tìm thấy loại sách nào có mã %s.\n", isbn_sach);
+    };
     for (int i = 0; i < tong_so_sach; i++) {
-        if (strcmp(isbn_sach, isbn[i]) == 0) {  // Tìm theo mã sách
-            found = 1;
-
+        if (strstr(isbn[i], isbn_sach) != NULL) {  
             // Cập nhật thông tin sách
-            printf("Bạn đang thực hiện chỉnh sửa thông tin sách có mã %s \n",isbn_sach);
+            printf("* Bạn đang thực hiện chỉnh sửa thông tin sách có mã %s \n",isbn_sach);
             printf ("  Thông tin hiện tại là: Tên sách: %s, Tác giả: %s, NXB: %s, Năm xuất bản: %d, Thể loại: %s, Giá sách: %.2f, Số quyển sách: %d\n",
                     ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);      
             printf("-- Nhập thông tin bạn muốn chỉnh sửa:\n");
 
-            // // --- OPTION: cho phép đổi ISBN nhưng kiểm tra trùng ---
-            // printf("Nhap so 1 de doi ISBN moi hoac so bat ki de bo qua");
-            // int chon;
-            // if (scanf("%d", &chon) != 1) {
-            //     // dọn input nếu nhập không hợp lệ
-            //     int _c;
-            //     while ((_c = getchar()) != '\n' && _c != EOF);
-            //     printf("Lua chon khong hop le. Bo qua doi ISBN.\n");
-            //     chon = 0;
-            // } else {
-            //     // dọn newline dư
-            //     int _c;
-            //     while ((_c = getchar()) != '\n' && _c != EOF);
-            // }
-
-            // if (chon == 1) {
-            //     char new_isbn[256];
-            //     printf("Nhap ma sach (vd: MS_001): ");
-            //     if (fgets(new_isbn, sizeof(new_isbn), stdin) != NULL) {
-            //         size_t ln = strlen(new_isbn);
-            //         if (ln && new_isbn[ln-1] == '\n') new_isbn[ln-1] = '\0';
-            //     } else {
-            //         new_isbn[0] = '\0';
-            //     }
-
-            //     if (new_isbn[0] != '\0') {
-            //         // kiem tra trung ISBN (khong tinh i)
-            //         int dup = 0;
-            //         for (int j = 0; j < tong_so_sach; j++) {
-            //             if (j == i) continue;
-            //             if (strcmp(isbn[j], new_isbn) == 0) { dup = 1; break; }
-            //         }
-            //         if (dup) {
-            //             printf("Loi: ISBN moi da ton tai. Khong doi ISBN.\n");
-            //         } else {
-            //             // Sao chep an toan
-            //             strncpy(isbn[i], new_isbn, sizeof(isbn[i]));
-            //             isbn[i][sizeof(isbn[i]) - 1] = '\0';
-            //             printf("ISBN da duoc cap nhat.\n");
-            //         }
-            //     } else {
-            //         printf("ISBN rong, giu nguyen.\n");
-            //     }
-            // } // nếu không chọn đổi thì tiếp tục cập nhật các trường khác
-
-            // Đổi thông tin khác
             printf("  Nhập tên sách: ");
             scanf(" %[^\n]%*c", ten_sach[i]);  // Tên sách
             printf("  Nhập tác giả: ");
@@ -149,21 +137,10 @@ void chinh_sua_sach(char *isbn_sach) {
             break;
             }
     }
-    if (!found) {
-        printf("Không tìm thấy loại sách nào có mã %s.\n", isbn_sach);
-    };
     remove_buffer();
 }
 
-// Tìm index sách theo ISBN (trả index hoặc -1)
-int find_index_by_isbn(char *isbn_sach) {
-    for (int i = 0; i < tong_so_sach; i++) {
-        if (strcmp(isbn[i], isbn_sach) == 0) return i;
-    }
-    return -1;
-}
-
-// Hàm xóa sách theo ISBN
+// 2d. Hàm xóa thông tin sách
 void xoa_sach(char *isbn_sach) {
     int idx = find_index_by_isbn(isbn_sach); 
     if (idx == -1) {
@@ -171,7 +148,7 @@ void xoa_sach(char *isbn_sach) {
         return;
     }
 
-    // Dời các phần tử phía sau lên trước
+    // Dời các phần tử phía sau lên trước sau khi xóa
     for (int j = idx; j < tong_so_sach - 1; j++) {
         strcpy(isbn[j], isbn[j+1]);
         strcpy(ten_sach[j], ten_sach[j+1]);
@@ -184,7 +161,7 @@ void xoa_sach(char *isbn_sach) {
         tong_so_quyen_goc[j] = tong_so_quyen_goc[j+1];
     }
 
-    // Xóa phần tử cuối (tùy chọn, để tránh dữ liệu rác)
+    // Xóa phần tử cuối
     isbn[tong_so_sach-1][0] = '\0';
     ten_sach[tong_so_sach-1][0] = '\0';
     tac_gia[tong_so_sach-1][0] = '\0';
@@ -199,7 +176,7 @@ void xoa_sach(char *isbn_sach) {
     remove_buffer();
 }
 
-// Hàm tìm kiếm sách theo ISBN
+// 2e. Hàm tìm kiếm sách theo ISBN
 void tim_kiem_theo_isbn(char *isbn_sach) {
     int idx = find_index_by_isbn(isbn_sach); 
     if (idx == -1) {
@@ -208,7 +185,7 @@ void tim_kiem_theo_isbn(char *isbn_sach) {
     }
 
     for (int i = 0; i < tong_so_sach; i++) {
-        if (strstr(isbn[i], isbn_sach) != NULL) { // isbn_sach xuất hiện trong isbn[i]
+        if (strstr(isbn[i], isbn_sach) != NULL) { 
             printf("  Tìm thấy sách có ISBN = %s với thông tin: Tên sách: %s, Tác giả: %s, NXB: %s, Năm xuất bản: %d, Thể loại: %s, Gía sách: %.0f đồng, Số quyển sách: %d quyển\n",
                 isbn[i], ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
         }
@@ -216,11 +193,11 @@ void tim_kiem_theo_isbn(char *isbn_sach) {
     remove_buffer();
 }
 
-// Hàm tìm kiếm sách theo tên sách
+// 2f. Hàm tìm kiếm sách theo tên sách
 void tim_kiem_theo_ten_sach(char *ten_can_tim) {
     int found = 0;
     for (int i = 0; i < tong_so_sach; i++) {
-        if (strstr(ten_sach[i], ten_can_tim) != NULL) { // ten_can_tim xuất hiện trong ten_sach[i]
+        if (strstr(ten_sach[i], ten_can_tim) != NULL) { 
             printf("  Tìm thấy sách có ISBN = %s với thông tin: Tên sách: %s, Tác giả: %s, NXB: %s, Năm xuất bản: %d, Thể loại: %s, Gía sách: %.2f đồng, Số quyển sách: %d quyển\n",
                 isbn[i], ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
             found = 1;
@@ -232,7 +209,7 @@ void tim_kiem_theo_ten_sach(char *ten_can_tim) {
     remove_buffer();
 }
 
-// Hàm quản lý sách
+// 2. Hàm menu quản lý sách
 void quan_ly_sach() {
     int chon;
     char isbn_sach[100];
@@ -245,9 +222,7 @@ void quan_ly_sach() {
     printf("5. Tìm kiếm sách theo ISBN\n");
     printf("6. Tìm kiếm sách theo tên sách\n");
     printf("0. Quay lại\n");
-    // printf("Chọn chức năng: ");
-    // scanf("%d", &choice);
-    extern int read_int_safe(const char *prompt, int *out);
+    
     if (!read_int_safe("Chọn chức năng: ", &chon)) {
         printf("  -> Nhập không hợp lệ!\n");
         return;
@@ -283,11 +258,12 @@ void quan_ly_sach() {
         case 0:
             return;
         default:
-            printf("Lựa chọn không hợp lệ!\n");
+            printf("Chọn không hợp lệ. Thử lại nhé!\n");
     }
 }
 
 
+// ----------------------------làm xong hết thì xóa -------------
 // Hàm đọc dữ liệu sách từ file
 void doc_du_lieu_sach_tu_file(const char *filename) {
     FILE *f = fopen(filename, "r");

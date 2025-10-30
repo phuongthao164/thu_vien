@@ -8,59 +8,37 @@
 #include "phieu_tra.h"
 #include "thong_ke.h"
 
-
-// Hàm chặn gọi lặp do buffer còn sót ---
-void remove_buffer() {
-    printf("\n(Nhấn Enter để quay lại menu) ");
-    int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF) {}
-    getchar();
-} 
-
-// ====== Cấu hình ======
+// Khai báo giá trị mặc định
 #define MAX_LEN           100
 #define MAX_SACH_MUON     10
 #define NGAY_MUON_TOI_DA  7
 
-char ngay_hien_tai[20];     // ngày hôm nay
+// Biến lưu trữ thông tin
+char ngay_hien_tai[20];     // Tính ngày hôm nay
 
-// extern từ phieu_muon.c
+// Các biến sử dụng lại từ file phieu_muon.c
 extern int tong_phieu_muon;
 extern int pm_ma_doc_gia[];
-extern char pm_ngay_muon[][20];
 extern char pm_ngay_tra_du_kien[][20];
 extern char pm_ngay_tra_thuc_te[][20];
 extern int pm_so_luong_sach[];
 extern char pm_ds_isbn[][10][50];
-extern long long pm_tong_tien_phat[];
 extern int pm_ds_sl_sach[][10];
 
-// extern từ phieu_tra.c
-extern int tong_phieu_tra;
-extern int pt_ma_doc_gia[];
-extern char pt_ngay_muon[][20];
-extern char pt_ngay_tra_du_kien[][20];
-extern char pt_ngay_tra_thuc_te[][20];
-extern int pt_so_luong_sach[];
-extern char pt_ds_isbn[][10][50];
-extern long long pt_tong_tien_phat[];
-extern int pt_ds_sl_sach[][10];
-
-// extern từ sach.c
+// Các biến sử dụng lại từ file sach.c
 extern char isbn[][200];
 extern char ten_sach[][200];
 extern int tong_so_sach;
 extern char the_loai[][200];
 extern int so_quyen[];
-extern int tong_so_quyen_goc[];
 
-// extern từ doc_gia.c
+// Các biến sử dụng lại từ file doc_gia.c
 extern int tong_so_doc_gia;
 extern char gioi_tinh[][100];
 extern char ho_ten[][100];
 
-// ====== Tiện ích ngày tháng ======
-// Hàm tính ngày hiện tại
+// CÁC HÀM BỔ SUNG CHO HÀM CHÍNH
+// a. Hàm tính ngày hiện tại
 char* ngay_ht() {
     time_t t_hien_tai = time(NULL);
     char *time_str_ht = ctime(&t_hien_tai);
@@ -75,7 +53,23 @@ char* ngay_ht() {
     return ngay_hien_tai;
 }
 
-// --- a. Tổng số sách ---
+// b. Hàm xóa bộ nhớ đệm
+void remove_buffer() {
+    printf("\n(Nhấn Enter để quay lại menu) ");
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF) {}
+    getchar();
+} 
+
+// c. Hàm so sánh ngày hiện tại và ngày dự kiến trả sách
+extern long kiem_tra_tra_sach(const char*, const char*);
+
+// d. Hàm bổ sung chức năng chọn option menu quản lý
+extern int read_int_safe(const char *prompt, int *out);
+
+
+// CÁC HÀM CHÍNH
+// 5a. Thống kê số lượng sách trong thư viện
 void thong_ke_tong_sach() {
     printf("\n=== THỐNG KÊ TỔNG SỐ SÁCH ===\n");
     printf("Tổng số loại sách: %d\n", tong_so_sach);
@@ -88,15 +82,16 @@ void thong_ke_tong_sach() {
     remove_buffer();
 }
 
-// --- b. Thống kê theo thể loại ---
+// 5b. Thống kê số lượng sách theo thể loại
 void thong_ke_the_loai() {
     printf("\n=== THỐNG KÊ SÁCH THEO THỂ LOẠI ===\n");
 
     if (tong_so_sach == 0) {
-        printf("Không có sách nào trong thư viện.\n");
+        printf("  -> Không có sách nào trong thư viện.\n");
         return;
     }
 
+    // Thống kê theo thể loại
     char ds_loai[500][200];
     int so_loai = 0;
     int dem_sach[500] = {0};
@@ -123,23 +118,23 @@ void thong_ke_the_loai() {
     remove_buffer();
 }
 
-// --- c. Tổng số độc giả ---
+// 5c. Thống kê số lượng độc giả
 void thong_ke_tong_doc_gia() {
     printf("\n=== THỐNG KÊ TỔNG SỐ LƯỢNG ĐỘC GIẢ ===\n");
     printf("\nTổng số lượng độc giả: %d\n", tong_so_doc_gia);
     remove_buffer();
 }
 
-// --- d. Độc giả theo giới tính ---
+// 5d. Thống kê số lượng độc giả theo giới tính
 void thong_ke_doc_gia_theo_gioi_tinh() {
     int nam = 0, nu = 0, khac = 0;
 
     for (int i = 0; i < tong_so_doc_gia; i++) {
-        if (ho_ten[i][0] == '\0') continue; // bỏ độc giả bị xóa
+        if (ho_ten[i][0] == '\0') continue; 
 
         if (strcasecmp(gioi_tinh[i], "Nam") == 0)
             nam++;
-        else if (strcasecmp(gioi_tinh[i], "Nu") == 0 || strcasecmp(gioi_tinh[i], "Nữ") == 0)
+        else if (strcasecmp(gioi_tinh[i], "Nữ") == 0)
             nu++;
         else
             khac++;
@@ -152,7 +147,7 @@ void thong_ke_doc_gia_theo_gioi_tinh() {
     remove_buffer();
 }
 
-// --- e. Sách đang được mượn ---
+// 5e. Thống kê số sách đang được mượn
 void thong_ke_sach_dang_muon() {
     printf("\n===== THỐNG KÊ SÁCH ĐANG ĐƯỢC MƯỢN =====\n");
 
@@ -164,10 +159,8 @@ void thong_ke_sach_dang_muon() {
         // Bỏ qua phiếu đã có ngày trả (đã trả xong)
         if (strlen(pm_ngay_tra_thuc_te[i]) > 0) continue;
 
-        // Duyệt từng sách trong phiếu
         for (int j = 0; j < MAX_SACH_MUON && pm_ds_sl_sach[i][j] > 0; j++) {
-
-            if (strlen(pm_ds_isbn[i][j]) == 0) continue; // bỏ qua dòng trống
+            if (strlen(pm_ds_isbn[i][j]) == 0) continue;
 
             // Tìm ISBN này trong danh sách thống kê
             int found = 0;
@@ -179,7 +172,7 @@ void thong_ke_sach_dang_muon() {
                 }
             }
 
-            // Nếu chưa có thì thêm mới
+            // Nếu chưa có thì thêm mới trong danh sách thống kê
             if (!found) {
                 strcpy(isbn_dang_muon[tong_sach_dang_muon], pm_ds_isbn[i][j]);
                 so_luong_dang_muon[tong_sach_dang_muon] = pm_ds_sl_sach[i][j];
@@ -193,12 +186,8 @@ void thong_ke_sach_dang_muon() {
         return;
     }
 
-    // printf("\n%-10s | %-40s | %-10s\n", "ISBN", "Tên sách", "SL đang mượn");
-    // printf("---------------------------------------------------------------\n");
-
     // In danh sách thống kê
     for (int k = 0; k < tong_sach_dang_muon; k++) {
-        // Tìm tên sách tương ứng từ danh mục gốc
         char ten[100] = "Không xác định";
         for (int s = 0; s < tong_so_sach; s++) {
             if (strcmp(isbn_dang_muon[k], isbn[s]) == 0) {
@@ -207,24 +196,19 @@ void thong_ke_sach_dang_muon() {
             }
         }
 
-        printf("  - Mã %s: Sách %s đang được mượn với số lượng %d quyển.\n",ten, isbn_dang_muon[k], so_luong_dang_muon[k]);
+        printf("  - Mã %s: Sách %s đang được mượn với số lượng %d quyển.\n", isbn_dang_muon[k], ten, so_luong_dang_muon[k]);
         
     };
     remove_buffer();
 }
 
-// --- f. Độc giả trả trễ ---
-extern long kiem_tra_tra_sach(const char*, const char*);
-
+// 5f. Thống kê danh sách độc giả bị trễ hạn
 void thong_ke_doc_gia_tre_han() {
     printf("\n=== DANH SÁCH ĐỘC GIẢ TRẢ TRỄ ===\n");
-
     int found = 0;
-
     for (int i = 0; i < tong_phieu_muon; i++) {
-        // chỉ xét phiếu chưa trả
+        // chỉ kiểm tra phiếu chưa trả sách
         if (pm_ngay_tra_thuc_te[i][0] == '\0') {
-        // if(strcmp(pm_ngay_tra_thuc_te[i][0], "Chưa trả") == 0){
             ngay_ht();
             long diff = kiem_tra_tra_sach(ngay_hien_tai, pm_ngay_tra_du_kien[i]);
             if (diff > 0) {
@@ -241,7 +225,7 @@ void thong_ke_doc_gia_tre_han() {
     remove_buffer();
 }
 
-// --- Menu thống kê ---
+// 5. Hàm quản lý menu thống kê
 void thong_ke_co_ban() {
     int chon;
     printf("\n===== MENU THỐNG KÊ =====\n");
@@ -252,11 +236,7 @@ void thong_ke_co_ban() {
     printf("5. Sách đang được mượn\n");
     printf("6. Độc giả bị trễ hạn\n");
     printf("0. Quay lại\n");
-    // printf("Chọn chức năng: ");
-    // scanf("%d", &choice);
 
-    // Xóa bộ nhớ buffer gây lỗi loop
-    extern int read_int_safe(const char *prompt, int *out);
     if (!read_int_safe("Chọn chức năng: ", &chon)) {
         printf("  -> Nhập không hợp lệ!\n");
         return;
@@ -270,7 +250,7 @@ void thong_ke_co_ban() {
         case 5: thong_ke_sach_dang_muon(); break;
         case 6: thong_ke_doc_gia_tre_han(); break;
         case 0: return;
-        default: printf("Lựa chọn không hợp lệ!\n");
+        default: printf("Chọn không hợp lệ. Thử lại nhé!\n");
     }
 }
 
