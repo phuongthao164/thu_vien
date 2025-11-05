@@ -65,6 +65,88 @@ int read_int_safe(const char *prompt, int *out) {
     return (sscanf(buf, "%d", out) == 1);
 }
 
+// Hàm tính độ dài hiển thị (visual width) của chuỗi UTF-8
+int utf8_display_width(const char *str) {
+    int width = 0;
+    unsigned char c;
+    
+    while (*str) {
+        c = (unsigned char)*str;
+        
+        if (c < 0x80) {
+            // ASCII character (1 byte)
+            width++;
+            str++;
+        } else if (c < 0xE0) {
+            // 2-byte UTF-8 character
+            width++;
+            str += 2;
+        } else if (c < 0xF0) {
+            // 3-byte UTF-8 character
+            width++;
+            str += 3;
+        } else {
+            // 4-byte UTF-8 character
+            width++;
+            str += 4;
+        }
+    }
+    
+    return width;
+}
+
+// Hàm in chuỗi với padding phù hợp cho UTF-8
+void print_padded(const char *str, int target_width) {
+    int display_width = utf8_display_width(str);
+    printf("%s", str);
+    
+    // Thêm khoảng trắng để đạt độ rộng mong muốn
+    for (int i = display_width; i < target_width; i++) {
+        printf(" ");
+    }
+}
+
+// Hàm kiểm tra năm nhuận, ngày hợp lệ và email được định nghĩa trong thong_ke.c
+extern int la_nam_nhuan(int nam);
+extern int kiem_tra_ngay_hop_le(const char *ngay_str);
+extern int kiem_tra_email_hop_le(const char *email_str);
+
+// e. Hàm kiểm tra CMND có đúng 12 số không
+int kiem_tra_cmnd_hop_le(char *cmnd_check) {
+    int len = strlen(cmnd_check);
+    
+    // Kiểm tra độ dài phải đúng 12 ký tự
+    if (len != 12) {
+        return 0;
+    }
+    
+    // Kiểm tra tất cả ký tự phải là số
+    for (int i = 0; i < len; i++) {
+        if (cmnd_check[i] < '0' || cmnd_check[i] > '9') {
+            return 0;
+        }
+    }
+    
+    return 1;
+}
+
+// f. Hàm kiểm tra CMND có bị trùng không (bỏ qua index hiện tại khi chỉnh sửa)
+int kiem_tra_cmnd_trung(char *cmnd_check, int skip_index) {
+    for (int i = 0; i < tong_so_doc_gia; i++) {
+        // Bỏ qua index hiện tại (dùng cho chỉnh sửa)
+        if (i == skip_index) continue;
+        
+        // Bỏ qua độc giả đã bị xóa
+        if (cmnd[i][0] == '\0') continue;
+        
+        // Kiểm tra trùng lặp
+        if (strcmp(cmnd_check, cmnd[i]) == 0) {
+            return 1; // Trùng
+        }
+    }
+    return 0; // Không trùng
+}
+
 
 // CÁC HÀM CHÍNH
 // 1b. Hàm thêm độc giả
@@ -88,13 +170,44 @@ void them_doc_gia() {
     printf("  Nhập họ tên: ");
     scanf(" %[^\n]%*c", ho_ten[tong_so_doc_gia]);  
 
-    // CMND
-    printf("  Nhập CMND: ");
-    scanf("%99s", cmnd[tong_so_doc_gia]);  
+    // CMND với validation
+    char cmnd_temp[MAX_LEN];
+    while (1) {
+        printf("  Nhập CMND (12 số): ");
+        scanf("%99s", cmnd_temp);
+        
+        // Kiểm tra CMND có đúng 12 số không
+        if (!kiem_tra_cmnd_hop_le(cmnd_temp)) {
+            printf("  ❌ CMND không hợp lệ! CMND phải có đúng 12 chữ số.\n");
+            continue;
+        }
+        
+        // Kiểm tra CMND có bị trùng không
+        if (kiem_tra_cmnd_trung(cmnd_temp, -1)) {
+            printf("  ❌ CMND đã tồn tại trong hệ thống! Vui lòng nhập CMND khác.\n");
+            continue;
+        }
+        
+        // CMND hợp lệ, lưu vào mảng
+        strcpy(cmnd[tong_so_doc_gia], cmnd_temp);
+        break;
+    }  
 
-    // Ngày tháng năm sinh
-    printf("  Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
-    scanf("%99s", ngay_sinh[tong_so_doc_gia]);  
+    // Ngày tháng năm sinh với validation
+    char ngay_sinh_temp[MAX_LEN];
+    while (1) {
+        printf("  Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
+        scanf("%99s", ngay_sinh_temp);
+        
+        if (!kiem_tra_ngay_hop_le(ngay_sinh_temp)) {
+            printf("  ❌ Ngày sinh không hợp lệ! Vui lòng nhập đúng định dạng dd/mm/yyyy.\n");
+            printf("     (Ví dụ: 01/01/2000, chú ý ngày/tháng phải hợp lệ)\n");
+            continue;
+        }
+        
+        strcpy(ngay_sinh[tong_so_doc_gia], ngay_sinh_temp);
+        break;
+    }  
 
     // Giới tính
     printf("  Nhập giới tính (Nhập 1.Nam , 2.Nữ , 3. Khác): ");
@@ -115,9 +228,21 @@ void them_doc_gia() {
         }
     }
 
-    // Email
-    printf("  Nhập email: ");
-    scanf("%99s", email[tong_so_doc_gia]); 
+    // Email với validation
+    char email_temp[MAX_LEN];
+    while (1) {
+        printf("  Nhập email: ");
+        scanf("%99s", email_temp);
+        
+        if (!kiem_tra_email_hop_le(email_temp)) {
+            printf("  ❌ Email không hợp lệ! Email phải có dạng: user@domain.com\n");
+            printf("     (Ví dụ: nguyenvana@gmail.com)\n");
+            continue;
+        }
+        
+        strcpy(email[tong_so_doc_gia], email_temp);
+        break;
+    }
     
     // Địa chỉ
     printf("  Nhập địa chỉ: ");
@@ -141,23 +266,41 @@ void danh_sach_doc_gia() {
         return;
     }
 
-    printf("  Số độc giả hiện tại của thư viện là: %d\n",tong_so_doc_gia);
-    printf("=== Danh sách độc giả ===\n");
+    printf("\n  So doc gia hien tai cua thu vien la: %d\n",tong_so_doc_gia);
+    printf("\n+-----+-----+--------------------------------+----------------------+------------+-----------+-------------------------------+--------------------------------+------------+------------+\n");
+    printf("| %-3s | %-3s | %-30s | %-20s | %-10s | %-9s | %-29s | %-30s | %-10s | %-10s |\n", 
+           "STT", "ID", "Ho ten", "CMND", "Ngay sinh", "Gioi tinh", "Email", "Dia chi", "Ngay lap", "Het han");
+    printf("+-----+-----+--------------------------------+----------------------+------------+-----------+-------------------------------+--------------------------------+------------+------------+\n");
+    
+    int stt = 1;
     for (int i = 0; i < tong_so_doc_gia; i++) {
-        printf(" -> Độc giả thứ %d (ID: %d)\n", i+1, id_doc_gia[i]);
         if (ho_ten[i][0] == '\0') {
-            printf("  >> Thông tin độc giả đã bị xóa \n");
+            // Độc giả đã bị xóa
+            printf("| %-3d | %-3d | %-30s | %-20s | %-10s | %-9s | %-29s | %-30s | %-10s | %-10s |\n",
+                   stt++, id_doc_gia[i], "[DA XOA]", "-", "-", "-", "-", "-", "-", "-");
         } else {
-            printf("  Họ tên: %s\n", ho_ten[i]);
-            printf("  CMND: %s\n", cmnd[i]);
-            printf("  Ngày sinh: %s\n", ngay_sinh[i]);
-            printf("  Giới tính: %s\n", gioi_tinh[i]);
-            printf("  Email: %s\n", email[i]);
-            printf("  Địa chỉ: %s\n", dia_chi[i]);
-            printf("  Ngày lập thẻ: %s\n", ngay_lap_the[i]);
-            printf("  Ngày hết hạn thẻ: %s\n", ngay_het_han_the[i]);
+            // In từng cột với padding UTF-8
+            printf("| %-3d | %-3d | ", stt++, id_doc_gia[i]);
+            print_padded(ho_ten[i], 30);
+            printf(" | ");
+            print_padded(cmnd[i], 20);
+            printf(" | ");
+            print_padded(ngay_sinh[i], 10);
+            printf(" | ");
+            print_padded(gioi_tinh[i], 9);
+            printf(" | ");
+            print_padded(email[i], 29);
+            printf(" | ");
+            print_padded(dia_chi[i], 30);
+            printf(" | ");
+            print_padded(ngay_lap_the[i], 10);
+            printf(" | ");
+            print_padded(ngay_het_han_the[i], 10);
+            printf(" |\n");
         }
     }
+    printf("+-----+-----+--------------------------------+----------------------+------------+-----------+-------------------------------+--------------------------------+------------+------------+\n");
+    
     remove_buffer();
 }
 
@@ -177,10 +320,42 @@ void chinh_sua_doc_gia(int id) {
                     printf("-- Nhập thông tin mới:\n");
                     printf("  Nhập họ tên: ");
                     scanf(" %[^\n]%*c", ho_ten[i]);
-                    printf("  Nhập CMND: ");
-                    scanf("%99s", cmnd[i]);
-                    printf("  Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
-                    scanf("%99s", ngay_sinh[i]);
+                    
+                    // CMND với validation
+                    char cmnd_temp[MAX_LEN];
+                    while (1) {
+                        printf("  Nhập CMND (12 số): ");
+                        scanf("%99s", cmnd_temp);
+                        
+                        if (!kiem_tra_cmnd_hop_le(cmnd_temp)) {
+                            printf("  ❌ CMND không hợp lệ! CMND phải có đúng 12 chữ số.\n");
+                            continue;
+                        }
+                        
+                        if (kiem_tra_cmnd_trung(cmnd_temp, i)) {
+                            printf("  ❌ CMND đã tồn tại trong hệ thống! Vui lòng nhập CMND khác.\n");
+                            continue;
+                        }
+                        
+                        strcpy(cmnd[i], cmnd_temp);
+                        break;
+                    }
+                    
+                    // Ngày sinh với validation
+                    char ngay_sinh_temp[MAX_LEN];
+                    while (1) {
+                        printf("  Nhập ngày tháng năm sinh (dd/mm/yyyy): ");
+                        scanf("%99s", ngay_sinh_temp);
+                        
+                        if (!kiem_tra_ngay_hop_le(ngay_sinh_temp)) {
+                            printf("  ❌ Ngày sinh không hợp lệ! Vui lòng nhập đúng định dạng dd/mm/yyyy.\n");
+                            continue;
+                        }
+                        
+                        strcpy(ngay_sinh[i], ngay_sinh_temp);
+                        break;
+                    }
+                    
                     printf("  Nhập giới tính (Nhập 1.Nam , 2.Nữ , 3. Khác): ");
                     int chon_gioi_tinh;
                     scanf("%d", &chon_gioi_tinh);
@@ -198,8 +373,22 @@ void chinh_sua_doc_gia(int id) {
                             printf("Nhập không đúng, vui lòng nhập lại!\n");
                         }
                     }
-                    printf("  Nhập email: ");
-                    scanf("%99s", email[i]);
+                    
+                    // Email với validation
+                    char email_temp[MAX_LEN];
+                    while (1) {
+                        printf("  Nhập email: ");
+                        scanf("%99s", email_temp);
+                        
+                        if (!kiem_tra_email_hop_le(email_temp)) {
+                            printf("  ❌ Email không hợp lệ! Email phải có dạng: user@domain.com\n");
+                            continue;
+                        }
+                        
+                        strcpy(email[i], email_temp);
+                        break;
+                    }
+                    
                     printf("  Nhập địa chỉ: ");
                     scanf(" %[^\n]%*c", dia_chi[i]);
                     ngay_lap(i);
@@ -220,12 +409,42 @@ void chinh_sua_doc_gia(int id) {
             // Họ tên
             printf("  Nhập họ tên chỉnh sửa: ");
             scanf(" %[^\n]%*c", ho_ten[i]);  
-            // CMND
-            printf("  Nhập CMND chỉnh sửa: ");
-            scanf("%99s", cmnd[i]);  
-            // Ngày sinh
-            printf("  Nhập ngày sinh chỉnh sửa (dd/mm/yyyy): ");
-            scanf("%99s", ngay_sinh[i]);  
+            
+            // CMND với validation
+            char cmnd_temp[MAX_LEN];
+            while (1) {
+                printf("  Nhập CMND chỉnh sửa (12 số): ");
+                scanf("%99s", cmnd_temp);
+                
+                if (!kiem_tra_cmnd_hop_le(cmnd_temp)) {
+                    printf("  ❌ CMND không hợp lệ! CMND phải có đúng 12 chữ số.\n");
+                    continue;
+                }
+                
+                if (kiem_tra_cmnd_trung(cmnd_temp, i)) {
+                    printf("  ❌ CMND đã tồn tại trong hệ thống! Vui lòng nhập CMND khác.\n");
+                    continue;
+                }
+                
+                strcpy(cmnd[i], cmnd_temp);
+                break;
+            }
+            
+            // Ngày sinh với validation
+            char ngay_sinh_temp[MAX_LEN];
+            while (1) {
+                printf("  Nhập ngày sinh chỉnh sửa (dd/mm/yyyy): ");
+                scanf("%99s", ngay_sinh_temp);
+                
+                if (!kiem_tra_ngay_hop_le(ngay_sinh_temp)) {
+                    printf("  ❌ Ngày sinh không hợp lệ! Vui lòng nhập đúng định dạng dd/mm/yyyy.\n");
+                    continue;
+                }
+                
+                strcpy(ngay_sinh[i], ngay_sinh_temp);
+                break;
+            }
+            
             // Giới tính
             printf("  Nhập giới tính chỉnh sửa (Nhập 1.Nam , 2.Nữ , 3. Khác): ");
             int chon_gioi_tinh;
@@ -244,9 +463,22 @@ void chinh_sua_doc_gia(int id) {
                     printf("Nhập không đúng, vui lòng nhập lại!\n");
                 }
             }
-            // Email
-            printf("  Nhập email chỉnh sửa: ");
-            scanf("%99s", email[i]);  
+            
+            // Email với validation
+            char email_temp[MAX_LEN];
+            while (1) {
+                printf("  Nhập email chỉnh sửa: ");
+                scanf("%99s", email_temp);
+                
+                if (!kiem_tra_email_hop_le(email_temp)) {
+                    printf("  ❌ Email không hợp lệ! Email phải có dạng: user@domain.com\n");
+                    continue;
+                }
+                
+                strcpy(email[i], email_temp);
+                break;
+            }
+            
             // Địa chỉ
             printf("  Nhập địa chỉ chỉnh sửa: ");
             scanf(" %[^\n]%*c", dia_chi[i]);  

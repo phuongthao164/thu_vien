@@ -49,7 +49,7 @@ char* ngay_ht() {
     sscanf(time_str_ht, "%*s %3s %d %*s %d", month_str_ht, &day_ht, &year_ht);
     int month_ht = (strstr(months, month_str_ht) - months) / 3 + 1;
 
-    snprintf(ngay_hien_tai, MAX_LEN, "%02d/%02d/%04d", day_ht, month_ht, year_ht);
+    snprintf(ngay_hien_tai, sizeof(ngay_hien_tai), "%02d/%02d/%04d", day_ht, month_ht, year_ht);
     return ngay_hien_tai;
 }
 
@@ -59,6 +59,101 @@ void remove_buffer() {
     int ch;
     while ((ch = getchar()) != '\n' && ch != EOF) {}
     getchar();
+}
+
+// c. Hàm kiểm tra năm nhuận
+int la_nam_nhuan(int nam) {
+    return (nam % 4 == 0 && nam % 100 != 0) || (nam % 400 == 0);
+}
+
+// d. Hàm kiểm tra ngày tháng năm hợp lệ
+int kiem_tra_ngay_hop_le(const char *ngay_str) {
+    int ngay, thang, nam;
+    
+    // Kiểm tra format dd/mm/yyyy
+    if (sscanf(ngay_str, "%d/%d/%d", &ngay, &thang, &nam) != 3) {
+        return 0; // Sai format
+    }
+    
+    // Kiểm tra năm (1900 - 2100)
+    if (nam < 1900 || nam > 2100) {
+        return 0;
+    }
+    
+    // Kiểm tra tháng (1-12)
+    if (thang < 1 || thang > 12) {
+        return 0;
+    }
+    
+    // Số ngày tối đa của mỗi tháng
+    int ngay_trong_thang[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    
+    // Nếu là năm nhuận, tháng 2 có 29 ngày
+    if (la_nam_nhuan(nam)) {
+        ngay_trong_thang[2] = 29;
+    }
+    
+    // Kiểm tra ngày hợp lệ
+    if (ngay < 1 || ngay > ngay_trong_thang[thang]) {
+        return 0;
+    }
+    
+    return 1; // Hợp lệ
+}
+
+// e. Hàm kiểm tra email hợp lệ
+int kiem_tra_email_hop_le(const char *email_str) {
+    int len = strlen(email_str);
+    
+    // Email phải có ít nhất 5 ký tự: a@b.c
+    if (len < 5) {
+        return 0;
+    }
+    
+    // Tìm vị trí của @
+    const char *at_pos = strchr(email_str, '@');
+    if (at_pos == NULL) {
+        return 0; // Không có @
+    }
+    
+    // @ không được ở đầu
+    if (at_pos == email_str) {
+        return 0;
+    }
+    
+    // Kiểm tra chỉ có 1 dấu @
+    if (strchr(at_pos + 1, '@') != NULL) {
+        return 0; // Có nhiều hơn 1 dấu @
+    }
+    
+    // Phần sau @ phải có dấu .
+    const char *dot_pos = strchr(at_pos + 1, '.');
+    if (dot_pos == NULL) {
+        return 0; // Không có dấu . sau @
+    }
+    
+    // Dấu . không được ngay sau @
+    if (dot_pos == at_pos + 1) {
+        return 0;
+    }
+    
+    // Phải có ít nhất 1 ký tự sau dấu . cuối cùng (extension)
+    if (strlen(dot_pos) < 2) {
+        return 0;
+    }
+    
+    // Kiểm tra ký tự hợp lệ (chữ, số, @, ., _, -)
+    for (int i = 0; i < len; i++) {
+        char c = email_str[i];
+        if (!((c >= 'a' && c <= 'z') || 
+              (c >= 'A' && c <= 'Z') || 
+              (c >= '0' && c <= '9') || 
+              c == '@' || c == '.' || c == '_' || c == '-')) {
+            return 0;
+        }
+    }
+    
+    return 1; // Hợp lệ
 } 
 
 // c. Hàm so sánh ngày hiện tại và ngày dự kiến trả sách

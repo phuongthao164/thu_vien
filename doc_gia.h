@@ -22,3 +22,9 @@ void tim_kiem_theo_ten_doc_gia(char *ten_can_tim);
 // Hàm bổ sung
 int read_int_safe(const char *prompt, int *out);
 
+// Hàm kiểm tra CMND hợp lệ (12 số)
+int kiem_tra_cmnd_hop_le(char *cmnd_check);
+
+// Hàm kiểm tra CMND trùng lặp
+int kiem_tra_cmnd_trung(char *cmnd_check, int skip_index);
+

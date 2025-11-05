@@ -36,6 +36,10 @@ extern void remove_buffer();
 // c. Hàm bổ sung chức năng chọn option menu quản lý
 extern int read_int_safe(const char *prompt, int *out);
 
+// d. Sử dụng các hàm xử lý UTF-8 từ doc_gia.c
+extern int utf8_display_width(const char *str);
+extern void print_padded(const char *str, int target_width);
+
 
 // CÁC HÀM CHÍNH
 // 2b. Hàm thêm sách
@@ -64,9 +68,20 @@ void them_sach() {
     printf("  Nhập nhà xuất bản: ");
     scanf(" %[^\n]%*c", nha_xuat_ban[tong_so_sach]);  
 
-    // Năm xuất bản
-    printf("  Nhập năm xuất bản: ");
-    scanf(" %d", &nam_xuat_ban[tong_so_sach]);  
+    // Năm xuất bản với validation
+    int nam_temp;
+    while (1) {
+        printf("  Nhập năm xuất bản (1900-2100): ");
+        scanf(" %d", &nam_temp);
+        
+        if (nam_temp < 1900 || nam_temp > 2100) {
+            printf("  ❌ Năm xuất bản không hợp lệ! Vui lòng nhập năm từ 1900 đến 2100.\n");
+            continue;
+        }
+        
+        nam_xuat_ban[tong_so_sach] = nam_temp;
+        break;
+    }  
 
     // Thể loại
     printf("  Nhập thể loại: ");
@@ -94,15 +109,48 @@ void danh_sach_sach() {
         return;
     }
 
-    printf("  Số sách hiện tại trong thư viện là: %d\n",tong_so_sach);
-    printf("=== Danh sách các loại sách trong thư viện ===\n");
+    printf("\n  So sach hien tai trong thu vien la: %d\n", tong_so_sach);
+    printf("\n+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    printf("| %-3s | %-13s | %-28s | %-28s | %-23s | %-6s | %-19s | %-10s | %-9s |\n", 
+           "STT", "ISBN", "Ten sach", "Tac gia", "NXB", "Nam XB", "The loai", "Gia", "So quyen");
+    printf("+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    
     for (int i = 0; i < tong_so_sach; i++) {
-        printf("* Loại sách thứ %d (ISBN: %s)\n", i+1, isbn[i]);
-        printf("  Tên sách: %s\n  Tác giả: %s\n  NXB: %s\n  Năm xuất bản: %d\n  Thể loại: %s\n  Giá sách: %.0f đồng\n  Số quyển sách: %d quyển\n",
-                ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
-        }
-    remove_buffer();
+        // Format giá sách
+        char gia_str[15];
+        snprintf(gia_str, 15, "%.0f VND", gia_sach[i]);
+        
+        // Format năm xuất bản
+        char nam_str[7];
+        snprintf(nam_str, 7, "%d", nam_xuat_ban[i]);
+        
+        // Format số quyển
+        char so_quyen_str[10];
+        snprintf(so_quyen_str, 10, "%d", so_quyen[i]);
+        
+        // In từng cột với padding UTF-8
+        printf("| %-3d | ", i+1);
+        print_padded(isbn[i], 13);
+        printf(" | ");
+        print_padded(ten_sach[i], 28);
+        printf(" | ");
+        print_padded(tac_gia[i], 28);
+        printf(" | ");
+        print_padded(nha_xuat_ban[i], 23);
+        printf(" | ");
+        print_padded(nam_str, 6);
+        printf(" | ");
+        print_padded(the_loai[i], 19);
+        printf(" | ");
+        print_padded(gia_str, 10);
+        printf(" | ");
+        print_padded(so_quyen_str, 9);
+        printf(" |\n");
     }
+    printf("+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    
+    remove_buffer();
+}
 
 // 2c. Hàm chỉnh sửa thông tin sách
 void chinh_sua_sach(char *isbn_sach) {
@@ -124,8 +172,22 @@ void chinh_sua_sach(char *isbn_sach) {
             scanf(" %[^\n]%*c", tac_gia[i]);  // Tác giả
             printf("  Nhập nhà xuất bản: ");
             scanf(" %[^\n]%*c", nha_xuat_ban[i]);  // Nhà xuất bản
-            printf("  Nhập năm xuất bản: ");
-            scanf(" %d", &nam_xuat_ban[i]);  // Năm xuất bản
+            
+            // Năm xuất bản với validation
+            int nam_temp;
+            while (1) {
+                printf("  Nhập năm xuất bản (1900-2100): ");
+                scanf(" %d", &nam_temp);
+                
+                if (nam_temp < 1900 || nam_temp > 2100) {
+                    printf("  ❌ Năm xuất bản không hợp lệ! Vui lòng nhập năm từ 1900 đến 2100.\n");
+                    continue;
+                }
+                
+                nam_xuat_ban[i] = nam_temp;
+                break;
+            }
+            
             printf("  Nhập thể loại: ");
             scanf(" %[^\n]%*c", the_loai[i]);  // Thể loại
             printf("  Nhập giá sách (vd: 150000): ");
@@ -181,31 +243,117 @@ void tim_kiem_theo_isbn(char *isbn_sach) {
     int idx = find_index_by_isbn(isbn_sach); 
     if (idx == -1) {
         printf("-> Không tìm thấy sách có ISBN: %s\n", isbn_sach);
+        remove_buffer();
         return;
     }
 
+    printf("\n  Tim thay sach co ISBN: %s\n", isbn_sach);
+    printf("\n+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    printf("| %-3s | %-13s | %-28s | %-28s | %-23s | %-6s | %-19s | %-10s | %-9s |\n", 
+           "STT", "ISBN", "Ten sach", "Tac gia", "NXB", "Nam XB", "The loai", "Gia", "So quyen");
+    printf("+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    
+    int stt = 1;
     for (int i = 0; i < tong_so_sach; i++) {
-        if (strstr(isbn[i], isbn_sach) != NULL) { 
-            printf("  Tìm thấy sách có ISBN = %s với thông tin: Tên sách: %s, Tác giả: %s, NXB: %s, Năm xuất bản: %d, Thể loại: %s, Gía sách: %.0f đồng, Số quyển sách: %d quyển\n",
-                isbn[i], ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
+        if (strstr(isbn[i], isbn_sach) != NULL) {
+            // Format giá sách
+            char gia_str[15];
+            snprintf(gia_str, 15, "%.0f VND", gia_sach[i]);
+            
+            // Format năm xuất bản
+            char nam_str[7];
+            snprintf(nam_str, 7, "%d", nam_xuat_ban[i]);
+            
+            // Format số quyển
+            char so_quyen_str[10];
+            snprintf(so_quyen_str, 10, "%d", so_quyen[i]);
+            
+            // In từng cột với padding UTF-8
+            printf("| %-3d | ", stt++);
+            print_padded(isbn[i], 13);
+            printf(" | ");
+            print_padded(ten_sach[i], 28);
+            printf(" | ");
+            print_padded(tac_gia[i], 28);
+            printf(" | ");
+            print_padded(nha_xuat_ban[i], 23);
+            printf(" | ");
+            print_padded(nam_str, 6);
+            printf(" | ");
+            print_padded(the_loai[i], 19);
+            printf(" | ");
+            print_padded(gia_str, 10);
+            printf(" | ");
+            print_padded(so_quyen_str, 9);
+            printf(" |\n");
         }
     }
+    printf("+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    
     remove_buffer();
 }
 
 // 2f. Hàm tìm kiếm sách theo tên sách
 void tim_kiem_theo_ten_sach(char *ten_can_tim) {
     int found = 0;
+    
+    // Kiểm tra xem có sách nào khớp không
     for (int i = 0; i < tong_so_sach; i++) {
         if (strstr(ten_sach[i], ten_can_tim) != NULL) { 
-            printf("  Tìm thấy sách có ISBN = %s với thông tin: Tên sách: %s, Tác giả: %s, NXB: %s, Năm xuất bản: %d, Thể loại: %s, Gía sách: %.2f đồng, Số quyển sách: %d quyển\n",
-                isbn[i], ten_sach[i], tac_gia[i], nha_xuat_ban[i], nam_xuat_ban[i], the_loai[i], gia_sach[i], so_quyen[i]);
             found = 1;
+            break;
         }
     }
+    
     if (!found) {
         printf("-> Không tìm thấy sách nào có tên: %s \n", ten_can_tim);
+        remove_buffer();
+        return;
     }
+    
+    printf("\n  Tim kiem sach co ten: %s\n", ten_can_tim);
+    printf("\n+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    printf("| %-3s | %-13s | %-28s | %-28s | %-23s | %-6s | %-19s | %-10s | %-9s |\n", 
+           "STT", "ISBN", "Ten sach", "Tac gia", "NXB", "Nam XB", "The loai", "Gia", "So quyen");
+    printf("+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    
+    int stt = 1;
+    for (int i = 0; i < tong_so_sach; i++) {
+        if (strstr(ten_sach[i], ten_can_tim) != NULL) {
+            // Format giá sách
+            char gia_str[15];
+            snprintf(gia_str, 15, "%.0f VND", gia_sach[i]);
+            
+            // Format năm xuất bản
+            char nam_str[7];
+            snprintf(nam_str, 7, "%d", nam_xuat_ban[i]);
+            
+            // Format số quyển
+            char so_quyen_str[10];
+            snprintf(so_quyen_str, 10, "%d", so_quyen[i]);
+            
+            // In từng cột với padding UTF-8
+            printf("| %-3d | ", stt++);
+            print_padded(isbn[i], 13);
+            printf(" | ");
+            print_padded(ten_sach[i], 28);
+            printf(" | ");
+            print_padded(tac_gia[i], 28);
+            printf(" | ");
+            print_padded(nha_xuat_ban[i], 23);
+            printf(" | ");
+            print_padded(nam_str, 6);
+            printf(" | ");
+            print_padded(the_loai[i], 19);
+            printf(" | ");
+            print_padded(gia_str, 10);
+            printf(" | ");
+            print_padded(so_quyen_str, 9);
+            printf(" |\n");
+        }
+    }
+    printf("+-----+---------------+------------------------------+------------------------------+-------------------------+--------+---------------------+------------+-----------+\n");
+    
     remove_buffer();
 }
 

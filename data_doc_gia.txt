@@ -3,3 +3,4 @@
 3;Le Van C;111222333;03/03/2002;Nam;levanc@example.com;Sai Gon;01/10/2024;01/10/2028
 4;Pham Thi D;444555666;04/04/2003;Nu;phamd@example.com;Can Tho;01/10/2024;01/10/2028
 5;Doan Van E;777888999;05/05/1999;Nam;doane@example.com;Hue;01/10/2024;01/10/2028
+6;Nguyễn Thành Nhân;054201003754;05/05/1999;Nam;nhannhan01052001@gmail.com;Hue;01/10/2024;01/10/2028

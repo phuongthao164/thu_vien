@@ -221,7 +221,7 @@ void lap_phieu_tra() {
         printf("  Mã độc giả: %d\n", pt_ma_doc_gia[i]);
         printf("  Ngày trả thực tế: %s\n", pt_ngay_tra_thuc_te[i]);
         if(so_ngay_tre > 0){
-            printf("  Trễ hạn: %d ngày -> Phạt trễ: %lld VND\n", so_ngay_tre, tong_phat_tre);
+            printf("  Trễ hạn: %ld ngày -> Phạt trễ: %lld VND\n", so_ngay_tre, tong_phat_tre);
         }
         if(tong_phat_mat > 0){
             printf("  Mất sách -> Phạt: %lld VND\n", tong_phat_mat);
@@ -266,7 +266,7 @@ void danh_sach_phieu_tra() {
                 printf("  Tổng tiền phạt: %lld VND\n", pt_tong_tien_phat[i]);
             }
             if(tong_phat_mat != 0){
-                printf("Sách bị mất phạt %d đồng\n", tong_phat_mat);
+                printf("Sách bị mất phạt %lld đồng\n", tong_phat_mat);
             }
         }
     }
